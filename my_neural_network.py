@@ -168,8 +168,6 @@ class My_Neural_Network():
                 self.__cycle(_inputs, _expected)
             self.__update_weights(_expected)
 
-       
-
     #faster convergence on small datasets but slower on big datasets due to constant weight update
     #can avoid local minimas or premature convergence but has higher variance in results due to randomness
     def __stochastic(self):
