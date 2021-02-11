@@ -3,6 +3,7 @@ from random import randint
 
 #Used on output layer to classify output to one category, the softmax function assumes each example can only be part of one class
 #Useful when more than 2 mutually exclusive classes, otherwise sigmoid can be used
+#Can converge faster by putting more emphasis through exponentials on probably correct answers
 #Takes vector and transforms into probabilities that sum to one
 def softmax(predicted):
     e_exponentials = []
@@ -89,7 +90,7 @@ def get_mini_batch(inputs, expected, b):
         last = pos
 
 class My_Neural_Network():
-    def __init__(self, inputs, expected, deep_layers=3, learning_rate=0.01, n_cycles=1000, type="mini-batch", b=32):
+    def __init__(self, inputs, expected, deep_layers=3, learning_rate=0.01, n_cycles=1000, type="mini-batch", b=32, softmax=False):
         if type != "s" and type != "b" and type != "m":
             print("Error: My_Neural_Network type, choose between stochastic, batch, mini-batch")
         self.type = type
@@ -102,6 +103,7 @@ class My_Neural_Network():
         self.alpha = learning_rate
         self.n_cycles = n_cycles
         self.b = b #mini-batch size
+        self.softmax = softmax
         self.show_all()
    
     def show_all(self):
@@ -120,7 +122,10 @@ class My_Neural_Network():
         self.layers[0] = np.array([inputs])
         for i in range(len(self.layers) - 2):
             self.layers[i + 1] = sigmoid(np.dot(self.layers[i], self.weights[i]) + self.bias[i])
-        self.layers[-1] = softmax((np.dot(self.layers[-2], self.weights[-1]) + self.bias[-1])[0])
+        if self.softmax == True:
+            self.layers[-1] = softmax((np.dot(self.layers[-2], self.weights[-1]) + self.bias[-1])[0])
+        else:
+            self.layers[-1] = sigmoid(np.dot(self.layers[-2], self.weights[-1]) + self.bias[-1])
         self.predicted = self.layers[-1]
 
     def cost(self, expected): #cost function calculates total error of made prediction #cost is calculated using sum of square error
@@ -203,6 +208,6 @@ class My_Neural_Network():
 if __name__ == "__main__":
     x = np.array([[0,0,1],[0,1,1],[1,0,1],[1,1,1]])
     y = np.array([[0, 1],[1, 1],[1, 0],[0, 1]])
-    test = My_Neural_Network(x, y)
+    test = My_Neural_Network(x, y, softmax=True)
     test.fit()
     print(test.predicted)
