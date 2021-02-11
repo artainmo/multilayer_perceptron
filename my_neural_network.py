@@ -133,10 +133,10 @@ class My_Neural_Network():
         for i in range(self.n_cycles):
             for inputs, expected in zip(self.inputs, self.expected):#complete batch cycle
                 self.__cycle(inputs, expected)
-            self.show_all()
+            #self.show_all()
             self.__update_weights()
-            self.show_all()
-            print("Cost: " + str(self.cost(expected)))
+            #self.show_all()
+            #print("Cost: " + str(self.cost(expected)))
 
     def __mini_batch(self):
         pass
