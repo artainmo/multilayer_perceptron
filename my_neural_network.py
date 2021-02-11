@@ -1,5 +1,8 @@
 import numpy as np
 from random import randint
+import matplotlib
+matplotlib.use('TkAgg') #Make matplotlib compatible with Big Sur on mac
+import matplotlib.pyplot as mpl
 
 #Used on output layer to classify output to one category, the softmax function assumes each example can only be part of one class
 #Useful when more than 2 mutually exclusive classes, otherwise sigmoid can be used
@@ -90,7 +93,7 @@ def get_mini_batch(inputs, expected, b):
         last = pos
 
 class My_Neural_Network():
-    def __init__(self, inputs, expected, deep_layers=3, learning_rate=0.01, n_cycles=1000, type="mini-batch", b=32, softmax=False):
+    def __init__(self, inputs, expected, deep_layers=3, learning_rate=0.01, n_cycles=1000, type="mini-batch", b=32, softmax=False, feedback=True):
         if type != "s" and type != "b" and type != "m":
             print("Error: My_Neural_Network type, choose between stochastic, batch, mini-batch")
         self.type = type
@@ -104,6 +107,8 @@ class My_Neural_Network():
         self.n_cycles = n_cycles
         self.b = b #mini-batch size
         self.softmax = softmax
+        self.costs = []
+        self.feedback = feedback
         self.show_all()
    
     def show_all(self):
@@ -129,7 +134,9 @@ class My_Neural_Network():
         self.predicted = self.layers[-1]
 
     def cost(self, expected): #cost function calculates total error of made prediction #cost is calculated using sum of square error
-        return np.square(np.dot(self.predicted, -expected))
+        ret =  np.square(np.dot(self.predicted, -expected))
+        self.costs.append(ret)
+        return ret
    
     def __output_layer_partial_derivatives(self, expected):
         return np.dot(self.layers[-2].T, derivative_delta_output_layer(self.predicted, expected))
@@ -164,7 +171,8 @@ class My_Neural_Network():
             self.weights[i] = self.weights[i] + (self.alpha * self.deep_gradient_weight[i])
             self.bias[i] = self.bias[i] + (self.alpha * self.deep_gradient_bias[i])
         self.__reset_gradients()
-        print("Epoch: " + str(epoch) + "/" + str(self.n_cycles) + " -> Cost: " + str(self.cost(expected)))
+        if self.feedback == True:
+            print("Epoch: " + str(epoch) + "/" + str(self.n_cycles) + " -> Cost: " + str(self.cost(expected)))
  
     def __cycle(self, inputs, expected):
          self.forward_propagation(inputs)
@@ -196,18 +204,26 @@ class My_Neural_Network():
             self.__cycle(self.inputs[random], self.expected[random])
             self.__update_weights(i + 1, self.expected[random])
 
+    def __feedback_cost_graph(self):
+        mpl.title("Starting Cost: " + str(round(self.costs[0][0], 5))  + "\nFinal Cost: " + str(round(self.costs[-1][0], 5)))
+        mpl.plot(range(len(self.costs)), self.costs)
+        mpl.show()
+
+
     def fit(self):
+        self.costs.clear()
         if self.type == "stochastic":
             self.__stochastic()   
         elif self.type == "batch":
             self.__batch()
         elif self.type == "mini-batch":
             self.__mini_batch()
+        if self.feedback == True:
+            self.__feedback_cost_graph()
 
 
 if __name__ == "__main__":
     x = np.array([[0,0,1],[0,1,1],[1,0,1],[1,1,1]])
     y = np.array([[0, 1],[1, 1],[1, 0],[0, 1]])
-    test = My_Neural_Network(x, y, softmax=True)
+    test = My_Neural_Network(x, y, softmax=True, type="mini-batch")
     test.fit()
-    print(test.predicted)
