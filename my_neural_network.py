@@ -1,5 +1,5 @@
 import numpy as np
-
+from random import randint
 #activation function, sets value between 0 and 1
 def sigmoid(x):
     return  np.divide(1, np.add(1, (np.exp((np.multiply(x, -1))))))
@@ -57,8 +57,28 @@ def init_deep_gradient(copy):
         ret.append(np.zeros(cpy.shape))
     return ret
 
+def get_mini_batch(inputs, expected, b):
+    length = len(inputs)
+    last = 0
+    pos = 0
+    while True:
+        pos += b
+        if pos > length:
+            ret = inputs[last:length]
+            pos -= length
+            while pos > length: 
+                pos -= length
+                np.concatenate((ret, inputs))
+            yield np.concatenate((ret, inputs[0:pos])), np.concatenate((expected[last:length], expected[0:pos]))
+        else:
+            yield inputs[last:pos], expected[last:pos]
+        last = pos
+
 class My_Neural_Network():
-    def __init__(self, inputs, expected, deep_layers=1, learning_rate=0.1, n_cycles=1000):
+    def __init__(self, inputs, expected, deep_layers=2, learning_rate=0.01, n_cycles=1000, type="mini-batch", b=32):
+        if type != "s" and type != "b" and type != "m":
+            print("Error: My_Neural_Network type, choose between stochastic, batch, mini-batch")
+        self.type = type
         self.inputs = inputs
         self.expected = expected
         self.predicted = np.zeros(expected.shape)
@@ -68,6 +88,7 @@ class My_Neural_Network():
         self.__reset_gradients()
         self.alpha = learning_rate
         self.n_cycles = n_cycles
+        self.b = b #mini-batch size
         self.show_all()
    
     def show_all(self):
@@ -117,41 +138,58 @@ class My_Neural_Network():
         self.deep_gradient_weight = init_deep_gradient(self.weights[0:-1])
         self.deep_gradient_bias = init_deep_gradient(self.bias[0:-1])
 
-    def __update_weights(self):
+    def __update_weights(self, expected):
         self.weights[-1] = self.weights[-1] - (self.alpha * self.output_gradient_weight[0])
         self.bias[-1] = self.bias[-1] - (self.alpha * self.output_gradient_bias[0])
         for i in range(len(self.weights) - 2, -1, -1): #range starts from last non-output weights until first weights (index 0)
             self.weights[i] = self.weights[i] - (self.alpha * self.deep_gradient_weight[i])
             self.bias[i] = self.bias[i] - (self.alpha * self.deep_gradient_bias[i])
         self.__reset_gradients()
+        print("Cost: " + str(self.cost(expected)))
  
     def __cycle(self, inputs, expected):
          self.forward_propagation(inputs)
          self.backward_propagation(expected)
-
-    def __batch_cycle(self):
+    
+    #slow but more computanional efficient on big datasets
+    #Stable convergence but risk of local minima or premature convergence
+    def __batch(self):
         for i in range(self.n_cycles):
             for inputs, expected in zip(self.inputs, self.expected):#complete batch cycle
                 self.__cycle(inputs, expected)
-            #self.show_all()
-            self.__update_weights()
-            #self.show_all()
-            #print("Cost: " + str(self.cost(expected)))
+            self.__update_weights(expected)
 
+    #mini-batch sits between stochastic and batch, trying to optimize benefits of both, and is the recommended variant of gradient descend
     def __mini_batch(self):
-        pass
-
-    def __stochastic_cycle(self):
-        shuffle(self.inputs)
+        generator = get_mini_batch(self.inputs, self.expected, self.b)
         for i in range(self.n_cycles):
-            self.__cycle(inputs, expected)     
+            inputs, expected = next(generator)
+            for _inputs, _expected in zip(self.inputs, self.expected):#complete batch cycle
+                self.__cycle(_inputs, _expected)
+            self.__update_weights(_expected)
+
+       
+
+    #faster convergence on small datasets but slower on big datasets due to constant weight update
+    #can avoid local minimas or premature convergence but has higher variance in results due to randomness
+    def __stochastic(self):
+        length = len(self.inputs) - 1
+        for i in range(self.n_cycles):
+            random = randint(0, length)
+            self.__cycle(self.inputs[random], self.expected[random])
+            self.__update_weights(self.expected[random])
 
     def fit(self):
-        self.__batch_cycle()   
+        if self.type == "stochastic":
+            self.__stochastic()   
+        elif self.type == "batch":
+            self.__batch()
+        elif self.type == "mini-batch":
+            self.__mini_batch()
 
 
 if __name__ == "__main__":
     x = np.array([[0,0,1],[0,1,1],[1,0,1],[1,1,1]])
     y = np.array([[0],[1],[1],[0]])
-    test = My_Neural_Network(x, y, 2)
+    test = My_Neural_Network(x, y)
     test.fit()
