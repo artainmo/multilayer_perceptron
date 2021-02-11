@@ -21,7 +21,7 @@ def get_train_test(x, y, proportion=0.8):
         training_lenght = 1
     training_set = shuffle[:training_lenght]
     test_set = shuffle[training_lenght:]
-    return (training_set[:,:-1], training_set[:,-1:], test_set[:,:-1], test_set[:,-1:])
+    return (training_set[:,:-1], training_set[:,-1:], test_set[:,:-1], test_set[:,-1:]) #(train_x, train_y, test_x, test_y)
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
