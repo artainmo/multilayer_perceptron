@@ -1,4 +1,5 @@
 import sys
+import os
 import pandas as pd
 import numpy as np
 from .stats import *
@@ -10,14 +11,13 @@ def iterate_data(data, func):
     return ret
 
 
-def get_numerical_data(path):
+def get_numerical_data(path, header):
     i = 0
     column_labels = []
-    try:
-    	data = pd.read_csv(path, index_col=0)
-    except:
-        print("Error: argument file")
-        exit()
+    if header == False:
+        data = pd.read_csv(path, header=None)
+    else:
+        data = pd.read_csv(path, index_col=0)
     for (column_name, column_data) in data.iteritems():
         if isinstance(column_data[0], (int, float)) == True:
             try:
@@ -27,10 +27,13 @@ def get_numerical_data(path):
             column_labels.append(column_name)
     return (numerical_data, column_labels)
 
-def describe(path):
+def describe(path, header=True):
+    if os.path.isfile(path) == False:
+        print("Error: file argument does not exist")
+        exit()
     row_labels = ["count", "min", "max", "mean", "standard_derivation", "quartiles_25", "median", "quartiles_75", "mode", "skewness", "kurtosis"]
     functions = [count, min, max, mean, standard_derivation, quartiles_25, median, quartiles_75, mode, skewness, kurtosis]
-    numerical_data, column_labels = get_numerical_data(path)
+    numerical_data, column_labels = get_numerical_data(path, header)
     for func in functions:
         try:
             rows = np.append(rows, np.array([iterate_data(numerical_data, func)]), axis=0)
