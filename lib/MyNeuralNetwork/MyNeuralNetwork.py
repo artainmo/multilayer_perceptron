@@ -92,7 +92,7 @@ def get_mini_batch(inputs, expected, b):
             yield inputs[last:pos], expected[last:pos]
         last = pos
 
-class My_Neural_Network():
+class MyNeuralNetwork():
     def __init__(self, inputs, expected, deep_layers=3, learning_rate=0.01, n_cycles=1000, type="mini-batch", b=32, softmax=False, feedback=True):
         if type != "s" and type != "b" and type != "m":
             print("Error: My_Neural_Network type, choose between stochastic, batch, mini-batch")
