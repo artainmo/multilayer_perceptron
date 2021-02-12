@@ -31,8 +31,10 @@ def derivative_delta_output_layer(predicted, expected):#Used for convenience of 
 def init_bias(weights):
     bias = []
     for layer in weights:
-        bias.append(np.ones([1, layer.shape[1]])) #Initialize bias to value one, to make sure node outputs are never stuck on zero
+        bias.append(np.zeros([1, layer.shape[1]])) #Initialize bias to zero as default
     return bias
+
+
 
 #Shape of each weight matrix consists of firstlayernodesXfollowinglayernodes
 def init_weights(layers):
@@ -40,7 +42,7 @@ def init_weights(layers):
     first = None 
     for layer in layers:
         if first != None:
-            weights.append(np.zeros([first, layer.shape[0]]))
+            weights.append(np.array([first, layer.shape[0]]))
         first = layer.shape[0]
     return weights
 
@@ -93,13 +95,13 @@ def get_mini_batch(inputs, expected, b):
         last = pos
 
 class MyNeuralNetwork():
-    def __init__(self, inputs, expected, deep_layers=3, learning_rate=0.01, n_cycles=1000, type="mini-batch", b=32, softmax=False, feedback=True):
+    def __init__(self, inputs, expected, deep_layers=1, learning_rate=0.01, n_cycles=1000, type="mini-batch", b=32, softmax=False, feedback=True):
         if type != "s" and type != "b" and type != "m":
             print("Error: My_Neural_Network type, choose between stochastic, batch, mini-batch")
         self.type = type
         self.inputs = inputs
         self.expected = expected
-        self.layers = init_layers(deep_layers, inputs.shape[1], self.expected.shape[1])
+        self.layers = init_layers(deep_layers + 1, inputs.shape[1], self.expected.shape[1])
         self.weights = init_weights(self.layers)
         self.bias = init_bias(self.weights)
         self.__reset_gradients()

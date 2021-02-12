@@ -1,0 +1,105 @@
+=========================
+NEURAL NETWORK PARAMETERS
+=========================
+
+LAYERS & NODES
+--------------
+Contains at least an input layer and ouptput layer. Deep layers sit in between. Each layer contains a certain amount of nodes.
+
+If the data is linearly separable, you do not need any deep layers. Deep layers allow for non-linearity like polynomials would.
+
+In general one hidden layer is sufficient for the majority of problems.
+
+More deep layers increase the complexity of the neural net which increases computational cost and slows down convergence, but they can improve precision, sometimes too much whereby they create overfitting.
+
+For the number of nodes per layer a pyramid structure is used, whereby the number of nodes is highest at input each following deep layer is lower than the prior one and lowest at ouptut.
+
+LEARNING RATE
+-------------
+Test to find out what learning rate is best, default learning rate used is 0,01.
+Learning rate is denoted as alpha.
+
+When alpha is too small algorithm needs to perform more steps until convergence and become slower.
+When alpha is too big potentially no convergence or less precision as it will hover over the minima.
+
+GRADIENT DESCEND
+----------------
+Stochastic:
+Faster convergence on small datasets but slower on big datasets due to constant weight update
+Can avoid local minimas or premature convergence but has higher variance in results due to randomness
+
+Batch:
+Slow but more computanional efficient on big datasets
+Stable convergence but risk of local minima or premature convergence
+
+Mini-batch:
+Mini-batch sits between stochastic and batch, trying to optimize benefits of both, and is the recommended variant of gradient descend. 
+b variable in NN holds size of batch, often 32 is used as default, some sources recommend number between 2 and 32...
+
+ACTVATION FUNCTION
+------------------
+Linear: output -inf,inf
+ReLU: rectified linear unit, output 0,+inf, less sensitive to vanishing gradient and non-relevant nodes, less computational cost, most used
+Tanh: hyperbolic tangent function, output -1,1, could converge faster on larger dataset than sigmoid
+Sigmoid: ouput 0,1
+Softmax: vector total output = 1
+
+~ OUTPUT LAYER ~
+Regression -> Linear or ReLU
+Binary classification or multiple classes with potential multiple correct answers -> sigmoid
+Single answer possible from multiple classes -> softmax
+
+~ DEEP LAYER ~
+ReLU, Tanh or sigmoid
+Can all be tried in following order: ReLu, Tanh, sigmoid
+
+COST FUNCTION
+-------------
+Regression -> mean square error, MSE
+Binary classification or multiple classes with potential multiple correct answers -> Binary cross entropy
+Single answer possible from multiple classes -> cross entropy
+
+WEIGHT & BIAS INIT
+------------------
+Weights  intialization is based on deep layer activation function:
+ReLU -> He init
+Tanh -> Xavier init
+sigmoid -> random init (default init)
+
+Init to zero is also possible if bias is not equal to zero, but is not optimal.
+
+Optimizing init is practical to fasten convergence by avoiding vanishing gradient problem
+
+Bias are usually init to 0, starting of neutral.
+
+TERMS MORE EXPLAINED
+--------------------
+Vanishing gradient problem -> small values are slow to change/learn, leading to no/slow convergence, problem when weights are initialized to zero for example
+non-relevant nodes -> Some nodes that are not relevant should be deactivated by the activation function setting its value to 0. ReLU does that best.
+
+================
+DATA PREPARATION
+================
+
+y or predicted values and x or features should be separated.
+Data can be normalied meaning transforming all data into 0,1 range, faster convergence by reducing computational cost through samll numbers, also sets different features on same scale
+Data can further be split into training data and test data (0.8 - 0.2 recommended ratio), to verify overfitting. Also possible training, test and validation set (0.6, 0.2, 0.2).
+Features with textual data can be converted into numerical data, each label takes different number.
+If your NN has multiple output nodes, the y or expected vaalues column, should be transformed not in single values but in vectors with same size as output nodes.
+
+DESCRIBE
+--------
+Describe function goes over each feature in data and looks at different analytical parameters:
+-See if data is correct in terms of numbers
+-See if data needs to be normalized? Big values or already small? Different features same scale?
+-Are there any missing datas?
+-Skewness result far away from 0 means alot of skewness, not good data feature for AI
+-Kurtosis result high number means the dataset has lots of outliers not good for AI (outliers can be removed)
+
+PAIRPLOT
+--------
+Pairplots compares two features over the different classes, in a line (separate comparison) plot and scatterplot:
+-Scatterplots are useful to find correlations and homogenousity between two features.
+If one of two features are the same, one of them is not interesting for AI and can be eliminated.
+-Line plots are useful to find correlations between classes in one feature
+Features that are homogenous or have low variation over the classes are not interesting for AI neither as they have low predictive power
