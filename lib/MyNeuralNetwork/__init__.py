@@ -1,1 +1,1 @@
-from MyNeuralNetwork import MyNeuralNetwork
+from .MyNeuralNetwork import MyNeuralNetwork

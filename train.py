@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pn
 import sys
 import os
+from lib.MyNeuralNetwork import *
 
 def get_x_y(path, column_range_x, column_y):
     if os.path.isfile(path) == False:
@@ -30,3 +31,5 @@ if __name__ == "__main__":
         path = sys.argv[1]
     x, y = get_x_y(path, list(range(2, 32)), 1)
     data = get_train_test(x, y)
+    NN = MyNeuralNetwork(data[0], data[1], softmax=True)
+    NN.fit()
