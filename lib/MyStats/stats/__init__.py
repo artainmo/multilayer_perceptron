@@ -9,3 +9,4 @@ from .stat import quartiles_75
 from .stat import mode
 from .stat import skewness
 from .stat import kurtosis
+from .stat import missing_values 

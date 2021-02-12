@@ -138,3 +138,6 @@ def kurtosis(column):
     summation2 /= column.shape[0]
     summation2 **=3
     return summation1/summation2
+
+def missing_values(column):
+    return len(column[np.isnan(column)])
