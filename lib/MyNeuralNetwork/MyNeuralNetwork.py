@@ -253,8 +253,8 @@ class MyNeuralNetwork():
             self.__feedback_cost_graph()
 
 
-if __name__ == "__main__":
-    x = np.array([[0,0,1],[0,1,1],[1,0,1],[1,1,1]]) #4X3 -> 4 examples and 3 inputs expected
-    y = np.array([[0, 1],[1, 1],[1, 0],[0, 1]]) #4X2 -> 4 examples and 2 outputs expected
-    test = MyNeuralNetwork(x, y)
-    test.fit()
+#if __name__ == "__main__":
+#    x = np.array([[0,0,1],[0,1,1],[1,0,1],[1,1,1]]) #4X3 -> 4 examples and 3 inputs expected
+#    y = np.array([[0, 1],[1, 1],[1, 0],[0, 1]]) #4X2 -> 4 examples and 2 outputs expected
+#    test = MyNeuralNetwork(x, y)
+#    test.fit()
