@@ -9,14 +9,15 @@ import matplotlib.pyplot as mpl
 #Can converge faster by putting more emphasis through exponentials on probably correct answers
 #Takes vector and transforms into probabilities that sum to one
 def softmax(predicted):
-    e_exponentials = []
-    normalized = []
-    for _class in predicted:
-        e_exponentials.append(np.exp(_class))
-    normalization_term = np.sum(e_exponentials)
-    for num in e_exponentials:
-        normalized.append(num / normalization_term)
-    return np.array([normalized])  
+    return np.array([np.exp(predicted) / np.sum(np.exp(predicted))])
+    #e_exponentials = []
+    #normalized = []
+    #for _class in predicted:
+    #    e_exponentials.append(np.exp(_class))
+    #normalization_term = np.sum(e_exponentials)
+    #for num in e_exponentials:
+    #    normalized.append(num / normalization_term)
+    #return np.array([normalized])  
 
 #activation function, sets value between 0 and 1
 def sigmoid(x):
@@ -25,8 +26,26 @@ def sigmoid(x):
 def derivative_sigmoid(x):#used to find gradient, calculates slope of predicted value
     return x * (1.0 - x)
 
-def derivative_delta_output_layer(predicted, expected):#Used for convenience of separating mathematical formula derivative
-    return (predicted - expected) * derivative_sigmoid(predicted)
+#activation function sets value between -1,1
+def tanh(x):
+    return np.tanh(x)
+
+def derivative_tanh(x):
+    return 1 - np.square(x)
+
+def relu(x):
+    for i in range(len(x[0])):
+        if x[0][i] < 0:
+            x[0][i] = 0
+    return x
+
+def derivative_relu(x):
+    for i in range(len(x[0])):
+        if x[0][i] <= 0:
+            x[0][i] = 0
+        else:
+            x[0][i] = 1
+    return x
 
 def init_bias(weights):
     bias = []
@@ -34,15 +53,13 @@ def init_bias(weights):
         bias.append(np.zeros([1, layer.shape[1]])) #Initialize bias to zero as default
     return bias
 
-
-
 #Shape of each weight matrix consists of firstlayernodesXfollowinglayernodes
 def init_weights(layers):
     weights = []
     first = None 
     for layer in layers:
         if first != None:
-            weights.append(np.array([first, layer.shape[0]]))
+            weights.append(np.ones([first, layer.shape[0]]))
         first = layer.shape[0]
     return weights
 
@@ -95,10 +112,26 @@ def get_mini_batch(inputs, expected, b):
         last = pos
 
 class MyNeuralNetwork():
-    def __init__(self, inputs, expected, deep_layers=1, learning_rate=0.01, n_cycles=1000, type="mini-batch", b=32, softmax=False, feedback=True):
-        if type != "s" and type != "b" and type != "m":
-            print("Error: My_Neural_Network type, choose between stochastic, batch, mini-batch")
-        self.type = type
+    def __init__(self, inputs, expected, deep_layers=1, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="relu", activation_function_output="softmax", feedback=True):
+        if gradient_descend == "stochastic":
+            self.gradient_descend = self.__stochastic
+        elif gradient_descend == "batch":
+            self.gradient_descend = self.__batch
+        elif gradient_descend == "mini-batch":
+            self.gradient_descend = self.__mini_batch
+        else:
+            print("Error: My_Neural_Network gradient descend, choose between stochastic, batch, mini-batch")
+        if activation_function_layers == "sigmoid":
+            self.layers_activation_function = sigmoid
+            self.derivative_layers_activation_function = derivative_sigmoid
+        elif activation_function_layers == "tanh":
+            self.layers_activation_function = tanh
+            self.derivative_layers_activation_function = derivative_tanh
+        elif activation_function_layers == "relu":
+            self.layers_activation_function = relu
+            self.derivative_layers_activation_function = derivative_relu
+        else:
+            print("Error: My_Neural_Network activation function layers, choose between stochastic, batch, mini-batch")
         self.inputs = inputs
         self.expected = expected
         self.layers = init_layers(deep_layers + 1, inputs.shape[1], self.expected.shape[1])
@@ -128,23 +161,23 @@ class MyNeuralNetwork():
     def forward_propagation(self, inputs):
         self.layers[0] = np.array([inputs])
         for i in range(len(self.layers) - 2):
-            self.layers[i + 1] = sigmoid(np.dot(self.layers[i], self.weights[i]) + self.bias[i])
-        if self.softmax == True:
-            self.layers[-1] = softmax((np.dot(self.layers[-2], self.weights[-1]) + self.bias[-1])[0])
-        else:
-            self.layers[-1] = sigmoid(np.dot(self.layers[-2], self.weights[-1]) + self.bias[-1])
+            self.layers[i + 1] = self.layers_activation_function(np.dot(self.layers[i], self.weights[i]) + self.bias[i])
+        self.layers[-1] = softmax((np.dot(self.layers[-2], self.weights[-1]) + self.bias[-1])[0])
         self.predicted = self.layers[-1]
 
     def cost(self, expected): #cost function calculates total error of made prediction #cost is calculated using sum of square error
         ret =  np.square(np.dot(self.predicted, -expected))
         self.costs.append(ret)
         return ret
-   
+ 
+    def __derivative_delta_output_layer(self, expected):#Used for convenience of separating mathematical formula derivative
+        return (self.predicted - expected) * self.derivative_layers_activation_function(self.predicted)
+  
     def __output_layer_partial_derivatives(self, expected):
-        return np.dot(self.layers[-2].T, derivative_delta_output_layer(self.predicted, expected))
+        return np.dot(self.layers[-2].T, self.__derivative_delta_output_layer(expected))
     
     def __delta_derivative_deep_layer(self, position, expected):
-        return np.dot(derivative_delta_output_layer(self.predicted, expected), self.weights[position + 1].T) * derivative_sigmoid(self.layers[position + 1])
+        return np.dot(self.__derivative_delta_output_layer(expected), self.weights[position + 1].T) * self.derivative_layers_activation_function(self.layers[position + 1])
 
     def __deep_layer_partial_derivatives(self, position, expected): #More complex as has change in node has also effect on following nodes
         return np.dot(self.layers[position].T, self.__delta_derivative_deep_layer(position, expected)) 
@@ -155,7 +188,7 @@ class MyNeuralNetwork():
     #partial derivatives are used to verify how each weight and bias affect the error individually
     def backward_propagation(self, expected):
         self.output_gradient_weight[0] = self.output_gradient_weight[0] + self.__output_layer_partial_derivatives(expected)
-        self.output_gradient_bias[0] = self.output_gradient_bias[0] + derivative_delta_output_layer(self.predicted, expected)
+        self.output_gradient_bias[0] = self.output_gradient_bias[0] + self.__derivative_delta_output_layer(expected)
         for i in range(len(self.weights) - 2, -1, -1): #range starts from last non-output weights until first weights (index 0)
             self.deep_gradient_weight[i] = self.deep_gradient_weight[i] + self.__deep_layer_partial_derivatives(i, expected)
             self.deep_gradient_bias[i] = self.deep_gradient_bias[i] + self.__delta_derivative_deep_layer(i, expected)
@@ -207,6 +240,7 @@ class MyNeuralNetwork():
             self.__update_weights(i + 1, self.expected[random])
 
     def __feedback_cost_graph(self):
+        input("========================\nPress Enter To See Graph\n========================")
         mpl.title("Starting Cost: " + str(round(self.costs[0][0], 5))  + "\nFinal Cost: " + str(round(self.costs[-1][0], 5)))
         mpl.plot(range(len(self.costs)), self.costs)
         mpl.show()
@@ -214,18 +248,13 @@ class MyNeuralNetwork():
 
     def fit(self):
         self.costs.clear()
-        if self.type == "stochastic":
-            self.__stochastic()   
-        elif self.type == "batch":
-            self.__batch()
-        elif self.type == "mini-batch":
-            self.__mini_batch()
+        self.gradient_descend()
         if self.feedback == True:
             self.__feedback_cost_graph()
 
 
-#if __name__ == "__main__":
-#    x = np.array([[0,0,1],[0,1,1],[1,0,1],[1,1,1]]) 4X3 -> 4 examples and 3 inputs expected
-#    y = np.array([[0, 1],[1, 1],[1, 0],[0, 1]]) 4X2 -> 4 examples and 2 outputs expected
-#    test = My_Neural_Network(x, y, softmax=True, type="mini-batch")
-#    test.fit()
+if __name__ == "__main__":
+    x = np.array([[0,0,1],[0,1,1],[1,0,1],[1,1,1]]) #4X3 -> 4 examples and 3 inputs expected
+    y = np.array([[0, 1],[1, 1],[1, 0],[0, 1]]) #4X2 -> 4 examples and 2 outputs expected
+    test = MyNeuralNetwork(x, y)
+    test.fit()
