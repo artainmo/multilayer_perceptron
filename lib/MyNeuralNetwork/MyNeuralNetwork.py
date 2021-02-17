@@ -3,95 +3,19 @@ from random import randint
 import matplotlib
 matplotlib.use('TkAgg') #Make matplotlib compatible with Big Sur on mac
 import matplotlib.pyplot as mpl
-
-def softmax(predicted):
-    print(x)
-    return np.exp(predicted) / np.sum(np.exp(predicted))
-
-def derivative_softmax(predicted, expected):
-    return predicted - expected
-
-#activation function, sets value between 0 and 1
-def sigmoid(x):
-    print(x)
-    return  np.divide(1, np.add(1, (np.exp((np.multiply(x, -1))))))
-
-def derivative_sigmoid(x):#used to find gradient, calculates slope of predicted value
-    return x * (1.0 - x)
-
-#activation function sets value between -1,1
-def tanh(x):
-    return np.tanh(x)
-
-def derivative_tanh(x):
-    return 1 - np.square(x)
-
-def relu(x):
-    for i in range(len(x[0])):
-        if x[0][i] < 0:
-            x[0][i] = 0
-    return x
-
-def derivative_relu(x):
-    for i in range(len(x[0])):
-        if x[0][i] <= 0:
-            x[0][i] = 0
-        else:
-            x[0][i] = 1
-    return x
+from activation_functions import *
+from init_neural_network import *
 
 def mean_square_error(predicted, expected):
     return np.square(np.dot(predicted, -expected)) / len(expected)
 
 #def cross_entropy(predicted, expected):
 
-
-def init_bias(weights):
-    bias = []
-    for layer in weights:
-        bias.append(np.zeros([1, layer.shape[1]])) #Initialize bias to zero as default
-    return bias
-
-#Shape of each weight matrix consists of firstlayernodesXfollowinglayernodes
-def init_weights(layers):
-    weights = []
-    first = None
-    for layer in layers:
-        if first != None:
-            weights.append(np.ones([first, layer.shape[0]]))
-        first = layer.shape[0]
-    return weights
-
-#Here we follow pyramid structure with input layers as base, making each following layer smaller
-def layer_length(input_nodes, output_nodes, deep_layers):
-    _range = range(input_nodes, output_nodes -1, -1)
-    base_percentile = 100 / deep_layers
-    percentile = base_percentile
-    yield input_nodes
-    while percentile < 100:
-        next_layer_nodes = np.percentile(_range, 100 - percentile).astype(np.int64)
-        yield next_layer_nodes
-        percentile += base_percentile
-    yield output_nodes
-
-def init_layers(deep_layers, input_nodes, output_nodes):
-    layers = []
-    for layer in layer_length(input_nodes, output_nodes, deep_layers):
-        layers.append(np.zeros([layer, 1]),)
-    return layers
-
 def show_object(name, obj):
     print(name + ":")
     for elem in obj:
         print(elem.shape)
     print("----------")
-
-
-def init_deep_gradient(copy):
-    ret = []
-    for cpy in copy:
-        ret.append(np.zeros(cpy.shape))
-    return ret
 
 def get_mini_batch(inputs, expected, b):
     length = len(inputs)
@@ -111,7 +35,7 @@ def get_mini_batch(inputs, expected, b):
         last = pos
 
 class MyNeuralNetwork():
-    def __init__(self, inputs, expected, deep_layers=1, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="tanh", activation_function_output="softmax", feedback=True):
+    def __init__(self, inputs, expected, deep_layers=1, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="tanh", activation_function_output="sigmoid", weight_init="xavier", feedback=True):
         if gradient_descend == "stochastic":
             self.gradient_descend = self.__stochastic
         elif gradient_descend == "batch":
@@ -120,6 +44,7 @@ class MyNeuralNetwork():
             self.gradient_descend = self.__mini_batch
         else:
             print("Error: My_Neural_Network gradient descend, choose between stochastic, batch, mini-batch")
+            exit()
         if activation_function_layers == "sigmoid":
             self.layers_activation_function = sigmoid
             self.derivative_layers_activation_function = derivative_sigmoid
@@ -131,6 +56,7 @@ class MyNeuralNetwork():
             self.derivative_layers_activation_function = derivative_relu
         else:
             print("Error: My_Neural_Network activation function layers")
+            exit()
         if activation_function_output == "sigmoid":
             self.output_activation_function = sigmoid
             self.derivative_output_activation_function = derivative_sigmoid
@@ -142,10 +68,20 @@ class MyNeuralNetwork():
             self.derivative_output_activation_function = derivative_relu
         else:
             print("Error: My_Neural_Network activation function output")
+            exit()
+        if weight_init == "xavier":
+            weight_init = xavier
+        elif weight_init == "he":
+            weight_init = he
+        elif weight_init == None:
+            weight_init = normal
+        else:
+            print("Error: weight init type")
+            exit()
         self.inputs = inputs
         self.expected = expected
         self.layers = init_layers(deep_layers + 1, inputs.shape[1], self.expected.shape[1])
-        self.weights = init_weights(self.layers)
+        self.weights = init_weights(self.layers, inputs.shape[1], self.expected.shape[1], weight_init)
         self.bias = init_bias(self.weights)
         self.__reset_gradients()
         self.alpha = learning_rate
