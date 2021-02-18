@@ -5,22 +5,7 @@ matplotlib.use('TkAgg') #Make matplotlib compatible with Big Sur on mac
 import matplotlib.pyplot as mpl
 from activation_functions import *
 from init_neural_network import *
-
-#Return vector of output node errors, if you want one cost sum them together
-def mean_square_error(predicted, expected):
-    return np.square(predicted * -expected) / expected.shape[0]
-
-def derivative_mean_square_error(predicted, expected):
-    return predicted - expected
-
-def cross_entropy(predicted, expected):
-    if expected == 1:
-      return -np.log(predicted)
-    else:
-      return -np.log(1 - predicted)
-
-def call_cross_entropy(predicted, expected):
-    return np.array([cross_entropy(pred, exp) for pred, exp in zip(predicted, expected)])
+from cost_functions import *
 
 def show_object(name, obj):
     print(name + ":")
@@ -75,8 +60,8 @@ class MyNeuralNetwork():
             self.output_activation_function = softmax
             self.derivative_output_activation_function = derivative_softmax
         elif activation_function_output == "relu":
-            self.output_activation_function = relu
-            self.derivative_output_activation_function = derivative_relu
+            self.output_activation_function = call_relu
+            self.derivative_output_activation_function = call_derivative_relu
         else:
             print("Error: My_Neural_Network activation function output")
             exit()
@@ -94,7 +79,7 @@ class MyNeuralNetwork():
             self.derivative_cost_function = derivative_mean_square_error
         elif cost_function == "CE":
             self.cost_function = call_cross_entropy
-            self.derivative_cost_function = 
+            pass #self.derivative_cost_function =
         else:
             print("Error: cost function")
             exit()
@@ -145,7 +130,7 @@ class MyNeuralNetwork():
         return ret
 
     def __derivative_delta_output_layer(self, expected):#Used for convenience of separating mathematical formula derivative
-        return self.derivative_cost_function(self.predicted, expected) * self.derivative_layers_activation_function(self.predicted)
+        return self.derivative_cost_function(self.predicted, expected) * self.derivative_output_activation_function(self.predicted)
 
     def __output_layer_partial_derivatives(self, expected):
         return np.dot(self.layers[-2].T, self.__derivative_delta_output_layer(expected))

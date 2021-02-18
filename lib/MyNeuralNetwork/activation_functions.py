@@ -5,7 +5,7 @@ def softmax(predicted):
 
 #Output of total vector values equals one
 def derivative_softmax(predicted, expected):
-    return predicted - expected
+    pass
 
 #activation function, sets value between 0 and 1
 def sigmoid(x):
@@ -16,22 +16,23 @@ def derivative_sigmoid(x):#used to find gradient, calculates slope of predicted 
 
 #activation function sets value between -1,1
 def tanh(x):
-    return np.tanh(x)
+    return (np.exp(x) - np.exp(-x)) / (np.exp(x) + np.exp(-x))
 
 def derivative_tanh(x):
     return 1 - np.square(x)
 
 #Value stays same unless under zero than equal to zero
 def relu(x):
-    for i in range(len(x[0])):
-        if x[0][i] < 0:
-            x[0][i] = 0
-    return x
+    return max(0,x)
+
+def call_relu():
+    return np.array([relu(elem) for elem in x[0])
 
 def derivative_relu(x):
-    for i in range(len(x[0])):
-        if x[0][i] <= 0:
-            x[0][i] = 0
-        else:
-            x[0][i] = 1
-    return x
+    if x <= 0:
+        return 0
+    else:
+        return 1
+
+def call_derivative_relu(x):
+    return np.array([relu(elem) for elem in x[0])
