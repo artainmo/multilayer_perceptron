@@ -6,10 +6,21 @@ import matplotlib.pyplot as mpl
 from activation_functions import *
 from init_neural_network import *
 
+#Return vector of output node errors, if you want one cost sum them together
 def mean_square_error(predicted, expected):
-    return np.square(np.dot(predicted, -expected)) / len(expected)
+    return np.square(predicted * -expected) / expected.shape[0]
 
-#def cross_entropy(predicted, expected):
+def derivative_mean_square_error(predicted, expected):
+    return predicted - expected
+
+def cross_entropy(predicted, expected):
+    if expected == 1:
+      return -np.log(predicted)
+    else:
+      return -np.log(1 - predicted)
+
+def call_cross_entropy(predicted, expected):
+    return np.array([cross_entropy(pred, exp) for pred, exp in zip(predicted, expected)])
 
 def show_object(name, obj):
     print(name + ":")
@@ -35,7 +46,7 @@ def get_mini_batch(inputs, expected, b):
         last = pos
 
 class MyNeuralNetwork():
-    def __init__(self, inputs, expected, deep_layers=1, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="tanh", activation_function_output="sigmoid", weight_init="xavier", feedback=True):
+    def __init__(self, inputs, expected, deep_layers=1, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="tanh", activation_function_output="sigmoid", weight_init="xavier", cost_function="MSE", feedback=True):
         if gradient_descend == "stochastic":
             self.gradient_descend = self.__stochastic
         elif gradient_descend == "batch":
@@ -78,6 +89,15 @@ class MyNeuralNetwork():
         else:
             print("Error: weight init type")
             exit()
+        if cost_function == "MSE":
+            self.cost_function = mean_square_error
+            self.derivative_cost_function = derivative_mean_square_error
+        elif cost_function == "CE":
+            self.cost_function = call_cross_entropy
+            self.derivative_cost_function = 
+        else:
+            print("Error: cost function")
+            exit()
         self.inputs = inputs
         self.expected = expected
         self.layers = init_layers(deep_layers + 1, inputs.shape[1], self.expected.shape[1])
@@ -119,12 +139,13 @@ class MyNeuralNetwork():
         self.predicted = self.layers[-1]
 
     def cost(self, expected): #cost function calculates total error of made prediction
-        ret = mean_square_error(self.predicted, expected)
+        ret = self.cost_function(self.predicted, expected)
+        ret = np.sum(ret) #Transform vector of errors into one total error value
         self.costs.append(ret)
         return ret
 
     def __derivative_delta_output_layer(self, expected):#Used for convenience of separating mathematical formula derivative
-        return (self.predicted - expected) * self.derivative_layers_activation_function(self.predicted)
+        return self.derivative_cost_function(self.predicted, expected) * self.derivative_layers_activation_function(self.predicted)
 
     def __output_layer_partial_derivatives(self, expected):
         return np.dot(self.layers[-2].T, self.__derivative_delta_output_layer(expected))
@@ -141,7 +162,7 @@ class MyNeuralNetwork():
     #partial derivatives are used to verify how each weight and bias affect the error individually
     def backward_propagation(self, expected):
         self.output_gradient_weight[0] = self.output_gradient_weight[0] - self.__output_layer_partial_derivatives(expected)
-        self.output_gradient_bias[0] = self.output_gradient_bias[0] - self.__derivative_delta_output_layer(expected)
+        self.output_gradient_bias[0] = self.output_gradient_bias[0] - self.__derivative_delta_output_layer(expected) #bias weight does not get multiplied by prior bias node as it is equal to one
         for i in range(len(self.weights) - 2, -1, -1): #range starts from last non-output weights until first weights (index 0)
             self.deep_gradient_weight[i] = self.deep_gradient_weight[i] - self.__deep_layer_partial_derivatives(i, expected)
             self.deep_gradient_bias[i] = self.deep_gradient_bias[i] - self.__delta_derivative_deep_layer(i, expected)
@@ -164,6 +185,7 @@ class MyNeuralNetwork():
 
     def __cycle(self, inputs, expected):
          self.forward_propagation(inputs)
+         total_error = self.cost_function(self.predicted, expected)
          self.backward_propagation(expected)
 
     #slow but more computanional efficient on big datasets
@@ -194,7 +216,7 @@ class MyNeuralNetwork():
 
     def __feedback_cost_graph(self):
         input("========================\nPress Enter To See Graph\n========================")
-        mpl.title("Starting Cost: " + str(round(self.costs[0][0], 5))  + "\nFinal Cost: " + str(round(self.costs[-1][0], 5)))
+        mpl.title("Starting Cost: " + str(round(self.costs[0], 5))  + "\nFinal Cost: " + str(round(self.costs[-1], 5)))
         mpl.plot(range(len(self.costs)), self.costs)
         mpl.show()
 
