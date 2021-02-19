@@ -147,8 +147,8 @@ class MyNeuralNetwork():
     #gradient = derivative = slope = rate of change
     #partial derivatives are used to verify how each weight and bias affect the error individually
     def backward_propagation(self, total_error):
-        self.output_gradient_weight[0] = self.output_gradient_weight[0] - self.__output_layer_partial_derivatives(total_error)
-        self.output_gradient_bias[0] = self.output_gradient_bias[0] - self.__derivative_delta_output_layer(total_error) #bias weight does not get multiplied by prior bias node as it is equal to one
+        self.output_gradient_weight[-1] = self.output_gradient_weight[0] - self.__output_layer_partial_derivatives(total_error)
+        self.output_gradient_bias[-1] = self.output_gradient_bias[0] - self.__derivative_delta_output_layer(total_error) #bias weight does not get multiplied by prior bias node as it is equal to one
         for i in range(len(self.weights) - 2, -1, -1): #range starts from last non-output weights until first weights (index 0)
             self.deep_gradient_weight[i] = self.deep_gradient_weight[i] - self.__deep_layer_partial_derivatives(i, total_error)
             self.deep_gradient_bias[i] = self.deep_gradient_bias[i] - self.__delta_derivative_deep_layer(i, total_error)
