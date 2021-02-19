@@ -26,7 +26,7 @@ def relu(x):
     return max(0,x)
 
 def call_relu():
-    return np.array([relu(elem) for elem in x[0])
+    return np.array([relu(elem) for elem in x[0]])
 
 def derivative_relu(x):
     if x <= 0:
@@ -35,4 +35,4 @@ def derivative_relu(x):
         return 1
 
 def call_derivative_relu(x):
-    return np.array([relu(elem) for elem in x[0])
+    return np.array([relu(elem) for elem in x[0]])

@@ -87,6 +87,7 @@ class MyNeuralNetwork():
         self.expected = expected
         self.layers = init_layers(deep_layers + 1, inputs.shape[1], self.expected.shape[1])
         self.weights = init_weights(self.layers, inputs.shape[1], self.expected.shape[1], weight_init)
+        self.delta = copy_object_shape(self.weights) #delta is used in backpropagation to indicate the error of each layer final activation value
         self.bias = init_bias(self.weights)
         self.__reset_gradients()
         self.alpha = learning_rate
@@ -123,40 +124,40 @@ class MyNeuralNetwork():
         self.layers[-1] = self.output_activation_function((np.dot(self.layers[-2], self.weights[-1]) + self.bias[-1]))
         self.predicted = self.layers[-1]
 
-    def cost(self, expected): #cost function calculates total error of made prediction
+    def one_cost(self, expected): #cost function calculates total error of made prediction
         ret = self.cost_function(self.predicted, expected)
         ret = np.sum(ret) #Transform vector of errors into one total error value
         self.costs.append(ret)
         return ret
 
-    def __derivative_delta_output_layer(self, expected):#Used for convenience of separating mathematical formula derivative
-        return self.derivative_cost_function(self.predicted, expected) * self.derivative_output_activation_function(self.predicted)
+    def __derivative_delta_output_layer(self, total_error):#Used for convenience of separating mathematical formula derivative
+        return total_error * self.derivative_layers_activation_function(self.predicted)
 
-    def __output_layer_partial_derivatives(self, expected):
-        return np.dot(self.layers[-2].T, self.__derivative_delta_output_layer(expected))
+    def __output_layer_partial_derivatives(self, total_error):
+        return np.dot(self.layers[-2].T, self.__derivative_delta_output_layer(total_error))
 
-    def __delta_derivative_deep_layer(self, position, expected):
-        return np.dot(self.__derivative_delta_output_layer(expected), self.weights[position + 1].T) * self.derivative_layers_activation_function(self.layers[position + 1])
+    def __delta_derivative_deep_layer(self, position, total_error):
+        return np.dot(self.__derivative_delta_output_layer(total_error), self.weights[position + 1].T) * self.derivative_layers_activation_function(self.layers[position + 1])
 
-    def __deep_layer_partial_derivatives(self, position, expected): #More complex as has change in node has also effect on following nodes
-        return np.dot(self.layers[position].T, self.__delta_derivative_deep_layer(position, expected))
+    def __deep_layer_partial_derivatives(self, position, total_error): #More complex as has change in node has also effect on following nodes
+        return np.dot(self.layers[position].T, self.__delta_derivative_deep_layer(position, total_error))
 
     #Adjust weight and bias values, based on gradient descend
     #gradient descend searches for error minima point
     #gradient = derivative = slope = rate of change
     #partial derivatives are used to verify how each weight and bias affect the error individually
-    def backward_propagation(self, expected):
-        self.output_gradient_weight[0] = self.output_gradient_weight[0] - self.__output_layer_partial_derivatives(expected)
-        self.output_gradient_bias[0] = self.output_gradient_bias[0] - self.__derivative_delta_output_layer(expected) #bias weight does not get multiplied by prior bias node as it is equal to one
+    def backward_propagation(self, total_error):
+        self.output_gradient_weight[0] = self.output_gradient_weight[0] - self.__output_layer_partial_derivatives(total_error)
+        self.output_gradient_bias[0] = self.output_gradient_bias[0] - self.__derivative_delta_output_layer(total_error) #bias weight does not get multiplied by prior bias node as it is equal to one
         for i in range(len(self.weights) - 2, -1, -1): #range starts from last non-output weights until first weights (index 0)
-            self.deep_gradient_weight[i] = self.deep_gradient_weight[i] - self.__deep_layer_partial_derivatives(i, expected)
-            self.deep_gradient_bias[i] = self.deep_gradient_bias[i] - self.__delta_derivative_deep_layer(i, expected)
+            self.deep_gradient_weight[i] = self.deep_gradient_weight[i] - self.__deep_layer_partial_derivatives(i, total_error)
+            self.deep_gradient_bias[i] = self.deep_gradient_bias[i] - self.__delta_derivative_deep_layer(i, total_error)
 
     def __reset_gradients(self):
-        self.output_gradient_weight = init_deep_gradient([self.weights[-1]])
-        self.output_gradient_bias = init_deep_gradient([self.bias[-1]])
-        self.deep_gradient_weight = init_deep_gradient(self.weights[0:-1])
-        self.deep_gradient_bias = init_deep_gradient(self.bias[0:-1])
+        self.output_gradient_weight = copy_object_shape([self.weights[-1]])
+        self.output_gradient_bias = copy_object_shape([self.bias[-1]])
+        self.deep_gradient_weight = copy_object_shape(self.weights[0:-1])
+        self.deep_gradient_bias = copy_object_shape(self.bias[0:-1])
 
     def __update_weights(self, epoch, expected):
         self.weights[-1] = self.weights[-1] - (self.alpha * self.output_gradient_weight[0])
@@ -166,12 +167,13 @@ class MyNeuralNetwork():
             self.bias[i] = self.bias[i] - (self.alpha * self.deep_gradient_bias[i])
         self.__reset_gradients()
         if self.feedback == True:
-            print("Epoch: " + str(epoch) + "/" + str(self.n_cycles) + " -> Cost: " + str(self.cost(expected)))
+            print("Epoch: " + str(epoch) + "/" + str(self.n_cycles) + " -> Cost: " + str(self.one_cost(expected)))
 
     def __cycle(self, inputs, expected):
          self.forward_propagation(inputs)
-         total_error = self.cost_function(self.predicted, expected)
-         self.backward_propagation(expected)
+         # total_error = self.cost_function(self.predicted, expected)
+         total_error = self.predicted - expected
+         self.backward_propagation(total_error)
 
     #slow but more computanional efficient on big datasets
     #Stable convergence but risk of local minima or premature convergence

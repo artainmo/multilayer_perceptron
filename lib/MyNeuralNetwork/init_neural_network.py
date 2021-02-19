@@ -45,7 +45,7 @@ def init_layers(deep_layers, input_nodes, output_nodes):
         layers.append(np.zeros([layer, 1]),)
     return layers
 
-def init_deep_gradient(copy):
+def copy_object_shape(copy):
     ret = []
     for cpy in copy:
         ret.append(np.zeros(cpy.shape))
