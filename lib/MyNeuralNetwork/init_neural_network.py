@@ -1,11 +1,5 @@
 import numpy as np
 
-def init_bias(weights):
-    bias = []
-    for layer in weights:
-        bias.append(np.zeros([1, layer.shape[1]])) #Initialize bias to zero as default
-    return bias
-
 #xavier method used for weight initalization when tanh activation function is used
 def xavier(input_nodes, output_nodes):
     return np.sqrt((1 / (output_nodes + input_nodes)))
@@ -16,6 +10,12 @@ def he(input_nodes, output_nodes):
 
 def normal(input_nodes, output_nodes):
     return 1
+
+def init_bias(weights):
+    bias = []
+    for layer in weights:
+        bias.append(np.zeros([1, layer.shape[1]])) #Initialize bias to zero as default
+    return bias
 
 #Shape of each weight matrix consists of firstlayernodesXfollowinglayernodes
 def init_weights(layers, input_nodes, output_nodes, method):
