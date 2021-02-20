@@ -42,7 +42,8 @@ d indicates partial derivative which is same as gradient
 @ equals dot product
 TE is total error of NN output
 .T is the vector/matrix transposed to allow for dot product calculations
-C or cost function is used to compute total error of each output node
+C or cost function is used to compute total error
+C' is used to compute derivative of cost function
 
 Vectors representing complete layers can be used to make calculations more efficiently using numpy.
 
@@ -64,33 +65,29 @@ A3 = g(Z3)
 L3 = A3
 
 Yhat = L3
-
-CALCULATE TOTAL ERROR
----------------------
-
 TE = C(Y, Yhat)
 
 BACK PROPAGATION
 ----------------
 
-D3 = TE
-d(W2) = A2.T @ D3
-d(B2) = D3
+D3 = C'(Y, Yhat) @ g'(Yhat)
+dW2 = A2.T @ D3
+dB2 = D3
 
 D2 = W2.T @ D3 * g'(A2)
-d(W1) = A1.T @ D2
-d(B1) = D2
+dW1 = A1.T @ D2
+dB1 = D2
 
 D1 = W1.T @ D2 * g'(A1)
-d(W0) = A0.T @ D1
-d(B0) = D1
+dW0 = A0.T @ D1
+dB0 = D1
 
-W0 -= d(W0)
-D0 -= d(D0)
-W1 -= d(W1)
-D1 -= d(D1)
-W2 -= d(W2)
-D2 -= d(D2)
+W0 -= dW0
+D0 -= dD0
+W1 -= dW1
+D1 -= dD1
+W2 -= dW2
+D2 -= dD2
 
 =========================
 NEURAL NETWORK PARAMETERS
@@ -210,4 +207,4 @@ https://towardsdatascience.com/
 https://www.machinecurve.com/
 https://www.deeplearning.ai/
 https://machinelearningmastery.com/
-
+http://neuralnetworksanddeeplearning.com/chap2.html
