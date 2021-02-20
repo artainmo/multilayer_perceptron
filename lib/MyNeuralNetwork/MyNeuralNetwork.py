@@ -31,7 +31,7 @@ def get_mini_batch(inputs, expected, b):
         last = pos
 
 class MyNeuralNetwork():
-    def __init__(self, inputs, expected, deep_layers=1, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="tanh", activation_function_output="sigmoid", weight_init="xavier", cost_function="MSE", feedback=True):
+    def __init__(self, inputs, expected, deep_layers=2, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="tanh", activation_function_output="sigmoid", weight_init="xavier", cost_function="MSE", feedback=True):
         if gradient_descend == "stochastic":
             self.gradient_descend = self.__stochastic
         elif gradient_descend == "batch":
@@ -135,8 +135,9 @@ class MyNeuralNetwork():
         return np.dot(self.layers[-2].T, Delta), Delta
 
     def __deep_layer_partial_derivatives(self, position, expected, Delta): #More complex as has change in node has also effect on following nodes
-        Delta = np.dot(self.weights[position + 1].T, Delta) * self.derivative_layers_activation_function(self.layers[position + 1])
-        return np.dot(self.layers[position].T, Delta)
+        print(position)
+        Delta = np.dot(self.weights[position].T, Delta) * self.derivative_layers_activation_function(self.layers[position])
+        return np.dot(self.layers[position - 1].T, Delta)
 
     #Adjust weight and bias values, based on gradient descend
     #gradient descend searches for error minima point
@@ -146,7 +147,7 @@ class MyNeuralNetwork():
         gradient, Delta = self.__output_layer_partial_derivatives(expected)
         self.output_gradient_weight[-1] = self.output_gradient_weight[0] - gradient
         self.output_gradient_bias[-1] = self.output_gradient_bias[0] - Delta #bias weight does not need to get multiplied by prior bias node as it is equal to one
-        for i in range(len(self.weights) - 2, -1, -1): #range starts from last non-output weights until first weights (index 0)
+        for i in range(len(self.weights) - 1, -1, -1): #range starts from last non-output weights until first weights (index 0)
             gradient, Delta = self.__deep_layer_partial_derivatives(i, expected, Delta)
             self.deep_gradient_weight[i] = self.deep_gradient_weight[i] - gradient
             self.deep_gradient_bias[i] = self.deep_gradient_bias[i] - Delta
