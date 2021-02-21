@@ -31,7 +31,7 @@ def get_mini_batch(inputs, expected, b):
         last = pos
 
 class MyNeuralNetwork():
-    def __init__(self, inputs, expected, deep_layers=2, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="tanh", activation_function_output="sigmoid", weight_init="xavier", cost_function="MSE", feedback=True):
+    def __init__(self, inputs, expected, deep_layers=2, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="tanh", activation_function_output="softmax", weight_init="xavier", cost_function="CE", feedback=True):
         if gradient_descend == "stochastic":
             self.gradient_descend = self.__stochastic
         elif gradient_descend == "batch":
@@ -78,8 +78,8 @@ class MyNeuralNetwork():
             self.cost_function = mean_square_error
             self.derivative_cost_function = derivative_mean_square_error
         elif cost_function == "CE":
-            self.cost_function = call_cross_entropy
-            self.derivative_cost_function = derivative_call_cross_entropy
+            self.cost_function = cross_entropy
+            self.derivative_cost_function = derivative_cross_entropy
 
         else:
             print("Error: cost function")
@@ -115,6 +115,16 @@ class MyNeuralNetwork():
         print("---------------------------------------------------------------------------------")
         input("=============================\nPress Enter To Start Training\n=============================")
 
+    def one_cost(self, expected): #cost function calculates total error of made prediction, mean over output nodes
+        total_error = self.cost_function(self.predicted, expected)
+        self.costs.append(total_error)
+        return total_error
+
+    def __feedback_cost_graph(self):
+        input("========================\nPress Enter To See Graph\n========================")
+        mpl.title("Starting Cost: " + str(round(self.costs[0], 5))  + "\nFinal Cost: " + str(round(self.costs[-1], 5)))
+        mpl.plot(range(len(self.costs)), self.costs)
+        mpl.show()
 
     #create output based on input and weights and biases
     def forward_propagation(self, inputs):
@@ -124,17 +134,11 @@ class MyNeuralNetwork():
         self.layers[-1] = self.output_activation_function((np.dot(self.layers[-2], self.weights[-1]) + self.bias[-1]))
         self.predicted = self.layers[-1]
 
-    def one_cost(self, expected): #cost function calculates total error of made prediction
-        total_error = self.cost_function(self.predicted, expected)
-        total_error = np.sum(total_error) #Transform vector of errors into one total error value
-        self.costs.append(total_error)
-        return total_error
-
     def __output_layer_partial_derivatives(self, expected):
-        Delta = self.derivative_cost_function(self.predicted, expected) * self.derivative_output_activation_function(self.predicted)
+        Delta = self.derivative_cost_function(self.predicted, expected) * self.derivative_layers_activation_function(self.predicted) #Not sure if this function should be layers or output activation function!!!
         return np.dot(self.layers[-2].T, Delta), Delta
 
-    def __deep_layer_partial_derivatives(self, position, expected, Delta): #More complex as has change in node has also effect on following nodes
+    def __deep_layer_partial_derivatives(self, position, Delta): #More complex as has change in node has also effect on following nodes
         Delta = (np.dot(self.weights[position + 1], Delta.T) * (self.derivative_layers_activation_function(self.layers[position + 1])).T).T
         return np.dot(self.layers[position].T, Delta), Delta
 
@@ -144,12 +148,12 @@ class MyNeuralNetwork():
     #partial derivatives are used to verify how each weight and bias affect the error individually
     def backward_propagation(self, expected):
         gradient, Delta = self.__output_layer_partial_derivatives(expected)
-        self.output_gradient_weight[0] = self.output_gradient_weight[0] - gradient
-        self.output_gradient_bias[0] = self.output_gradient_bias[0] - Delta #bias weight does not need to get multiplied by prior bias node as it is equal to one
+        self.output_gradient_weight[0] = self.output_gradient_weight[0] + gradient
+        self.output_gradient_bias[0] = self.output_gradient_bias[0] + Delta #bias weight does not need to get multiplied by prior bias node as it is equal to one
         for i in range(len(self.weights) - 2, -1, -1): #range starts from last non-output weights until first weights (index 1)
-            gradient, Delta = self.__deep_layer_partial_derivatives(i, expected, Delta)
-            self.deep_gradient_weight[i] = self.deep_gradient_weight[i] - gradient
-            self.deep_gradient_bias[i] = self.deep_gradient_bias[i] - Delta
+            gradient, Delta = self.__deep_layer_partial_derivatives(i, Delta)
+            self.deep_gradient_weight[i] = self.deep_gradient_weight[i] + gradient
+            self.deep_gradient_bias[i] = self.deep_gradient_bias[i] + Delta
 
     def __reset_gradients(self):
         self.output_gradient_weight = copy_object_shape([self.weights[-1]])
@@ -197,12 +201,6 @@ class MyNeuralNetwork():
             self.__cycle(self.inputs[random], self.expected[random])
             self.__update_weights(i + 1, self.expected[random])
 
-    def __feedback_cost_graph(self):
-        input("========================\nPress Enter To See Graph\n========================")
-        mpl.title("Starting Cost: " + str(round(self.costs[0], 5))  + "\nFinal Cost: " + str(round(self.costs[-1], 5)))
-        mpl.plot(range(len(self.costs)), self.costs)
-        mpl.show()
-
 
     def fit(self):
         self.costs.clear()
@@ -213,6 +211,6 @@ class MyNeuralNetwork():
 
 if __name__ == "__main__":
     x = np.array([[0,0,1,1,0,0],[0,1,1,1,0,0],[1,0,1,0,0,0],[1,1,1,0,0,0]]) #4X3 -> 4 examples and 3 inputs expected
-    y = np.array([[0, 1],[1, 1],[1, 0],[0, 1]]) #4X2 -> 4 examples and 2 outputs expected
+    y = np.array([[0, 1],[1, 1],[1, 0],[1, 0]]) #4X2 -> 4 examples and 2 outputs expected
     test = MyNeuralNetwork(x, y)
     test.fit()
