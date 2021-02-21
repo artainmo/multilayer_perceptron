@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pn
 import sys
 import os
-from lib.MyNeuralNetwork import *
+from .MyNeuralNetwork import *
 import pickle
 
 def save_neural_network(NN):
