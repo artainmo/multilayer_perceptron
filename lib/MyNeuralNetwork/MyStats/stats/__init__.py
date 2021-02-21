@@ -3,10 +3,10 @@ from .stat import min
 from .stat import max
 from .stat import mean
 from .stat import median
-from .stat import standard_derivation
+from .stat import standard_deviation
 from .stat import quartiles_25
 from .stat import quartiles_75
 from .stat import mode
 from .stat import skewness
 from .stat import kurtosis
-from .stat import missing_values 
+from .stat import missing_values

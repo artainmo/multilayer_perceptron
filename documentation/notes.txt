@@ -71,15 +71,15 @@ BACK PROPAGATION
 ----------------
 
 D3 = C'(Y, Yhat) @ g'(Yhat)
-dW2 = A2.T @ D3
+dW2 = A2 @ D3
 dB2 = D3
 
-D2 = W2.T @ D3 * g'(A2)
-dW1 = A1.T @ D2
+D2 = W2 @ D3 * g'(A2)
+dW1 = A1 @ D2
 dB1 = D2
 
-D1 = W1.T @ D2 * g'(A1)
-dW0 = A0.T @ D1
+D1 = W1 @ D2 * g'(A1)
+dW0 = A0 @ D1
 dB0 = D1
 
 W0 -= dW0
@@ -173,10 +173,28 @@ DATA PREPARATION
 ================
 
 y or predicted values and x or features should be separated.
-Data can be normalied meaning transforming all data into 0,1 range, faster convergence by reducing computational cost through samll numbers, also sets different features on same scale
+
+NORMALIZATION
+------------
+Normalization refers to reducing scale of data and leads to all features being on same scale and fastens computational costs.
+min-max normalization: When we do not want impact of outliers
+z-score normalization: When we do want impact of outliers, also avoid problem whereby different data has different max values
+
+DATA SPLITING
+-------------
 Data can further be split into training data and test data (0.8 - 0.2 recommended ratio), to verify overfitting. Also possible training, test and validation set (0.6, 0.2, 0.2).
+
+DATA TEXT TO NUMBERS
+--------------------
 Features with textual data can be converted into numerical data, each label takes different number.
-If your NN has multiple output nodes, the y or expected vaalues column, should be transformed not in single values but in vectors with same size as output nodes.
+
+EXPECTED/Y DATA
+---------------
+If your NN has multiple output nodes, the y or expected values column, should be transformed not in single values but in vectors with same size as output nodes.
+
+------------------
+DATA VISUALIZATION
+------------------
 
 DESCRIBE
 --------
@@ -184,8 +202,8 @@ Describe function goes over each feature in data and looks at different analytic
 -See if data is correct in terms of numbers
 -See if data needs to be normalized? Big values or already small? Different features same scale?
 -Are there any missing datas?
--Skewness result far away from 0 means alot of skewness, not good data feature for AI
--Kurtosis result high number means the dataset has lots of outliers not good for AI (outliers can be removed)
+-Skewness, gives normal distribution of values or measure of symmetry, 0 is symmetrical, +0.5 / -0.5 moderately skewed, +1/-1 is highly skewed
+-Kurtosis result high number means the dataset has lots of outliers, outliers can be good or not, if not they can be removed or min-max normalization can be used
 
 PAIRPLOT
 --------
@@ -195,8 +213,33 @@ If one of two features are the same, one of them is not interesting for AI and c
 -Line plots are useful to find correlations between classes in one feature
 Features that are homogenous or have low variation over the classes are not interesting for AI neither as they have low predictive power
 
+==============================
+DEBUGGING A LEARNING ALGORITHM
+==============================
+
+EVALUATION
+----------
+
+!!!
+
+OVERFITTING
+-----------
+HIGH VARIANCE: High variance between training sets, means very precise on each training sets, leads to overfitting.
+-> Increasing regularization can lower high variance
+-> Smaller sets of features can lower high variance
+-> More training data
+
+UNDERFITTING
+------------
+HIGH BIAS: Bias acts as strong suggestor, suggesting too much can lead to underfitting on test sets
+-> Decreasing regularization can lower high bias
+-> Extra features can lower high bias
+-> Adding polynomials or deep layers can lower high bias
+
+
+=======
 SOURCES
--------
+=======
 
 Nerual networks, a visual introduction for beginners - Michael Taylor
 

@@ -62,7 +62,7 @@ def median(column):
         return mean(np.array([column[i - 1], column[i]]))
 
 
-def standard_derivation(column):
+def standard_deviation(column):
     if isinstance(column[0], (int, float)) == False:
         return np.nan
     try:
@@ -114,11 +114,11 @@ def mode(column):
 
 # If skewness is positive, the mean is bigger than the median and the distribution has a large tail of high values.
 # If skewness is negative, the mean is smaller than the median and the distribution has a large tail of small values.
-# Machine learning models do not function well with skewed data, skewness can be fixed!
+# Machine learning models do not function well with skewed data
 def skewness(column):
     if isinstance(column[0], (int, float)) == False:
         return np.nan
-    return (mean(column) - median(column)) / standard_derivation(column)
+    return (mean(column) - median(column)) / standard_deviation(column)
 
 #Positive kurtosis indicates a thin pointed distribution.
 #Negative kurtosis indicates a broad flat distribution.

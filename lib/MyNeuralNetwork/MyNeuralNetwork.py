@@ -3,9 +3,9 @@ from random import randint
 import matplotlib
 matplotlib.use('TkAgg') #Make matplotlib compatible with Big Sur on mac
 import matplotlib.pyplot as mpl
-from activation_functions import *
-from init_neural_network import *
-from cost_functions import *
+from .activation_functions import *
+from .init_neural_network import *
+from .cost_functions import *
 
 def show_object(name, obj):
     print(name + ":")
@@ -96,7 +96,8 @@ class MyNeuralNetwork():
         self.b = b #mini-batch size
         self.costs = []
         self.feedback = feedback
-        self.show_all()
+        if self.feedback == True:
+            self.show_all()
 
     def show_all(self):
         print("---------------------------------------------------------------------------------")
@@ -113,7 +114,6 @@ class MyNeuralNetwork():
         print(self.output_activation_function)
         print(self.derivative_output_activation_function)
         print("---------------------------------------------------------------------------------")
-        input("=============================\nPress Enter To Start Training\n=============================")
 
     def one_cost(self, expected): #cost function calculates total error of made prediction, mean over output nodes
         total_error = self.cost_function(self.predicted, expected)
@@ -204,14 +204,22 @@ class MyNeuralNetwork():
 
 
     def fit(self):
+        input("=============================\nPress Enter To Start Training\n=============================")
         self.costs.clear()
         self.gradient_descend()
         if self.feedback == True:
             self.__feedback_cost_graph()
 
+    def predict(self, inputs):
+        answers = np.zeros((inputs.shape[0], self.expected.shape[1]))
+        for i in range(inputs.shape[0]):
+            self.forward_propagation(inputs[i])
+            answers[i] = self.predicted
+        return answers
 
-if __name__ == "__main__":
-    x = np.array([[0,0,1,1,0,0],[0,1,1,1,0,0],[1,0,1,0,0,0],[1,1,1,0,0,0]]) #4X3 -> 4 examples and 3 inputs expected
-    y = np.array([[0, 1],[1, 1],[1, 0],[1, 0]]) #4X2 -> 4 examples and 2 outputs expected
-    test = MyNeuralNetwork(x, y)
-    test.fit()
+
+# if __name__ == "__main__":
+#     x = np.array([[0,0,1,1,0,0],[0,1,1,1,0,0],[1,0,1,0,0,0],[1,1,1,0,0,0]]) #4X3 -> 4 examples and 3 inputs expected
+#     y = np.array([[0, 1],[1, 1],[1, 0],[1, 0]]) #4X2 -> 4 examples and 2 outputs expected
+#     test = MyNeuralNetwork(x, y)
+#     test.fit()

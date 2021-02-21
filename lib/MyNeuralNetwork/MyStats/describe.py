@@ -31,8 +31,8 @@ def describe(path, header=True):
     if os.path.isfile(path) == False:
         print("Error: file argument does not exist")
         exit()
-    row_labels = ["count", "min", "max", "mean", "standard_derivation", "quartiles_25", "median", "quartiles_75", "mode", "skewness", "kurtosis", "missing_values"]
-    functions = [count, min, max, mean, standard_derivation, quartiles_25, median, quartiles_75, mode, skewness, kurtosis, missing_values]
+    row_labels = ["count", "min", "max", "mean", "standard_deviation", "quartiles_25", "median", "quartiles_75", "mode", "skewness", "kurtosis", "missing_values"]
+    functions = [count, min, max, mean, standard_deviation, quartiles_25, median, quartiles_75, mode, skewness, kurtosis, missing_values]
     numerical_data, column_labels = get_numerical_data(path, header)
     for func in functions:
         try:
