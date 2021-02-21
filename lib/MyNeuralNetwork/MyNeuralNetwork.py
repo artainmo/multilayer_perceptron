@@ -135,7 +135,7 @@ class MyNeuralNetwork():
         self.predicted = self.layers[-1]
 
     def __output_layer_partial_derivatives(self, expected):
-        Delta = self.derivative_cost_function(self.predicted, expected) * self.derivative_layers_activation_function(self.predicted) #Not sure if this function should be layers or output activation function!!!
+        Delta = self.derivative_cost_function(self.predicted, expected) * self.derivative_output_activation_function(self.predicted) #!!!Not sure if this function should be layers or output activation function derivative
         return np.dot(self.layers[-2].T, Delta), Delta
 
     def __deep_layer_partial_derivatives(self, position, Delta): #More complex as has change in node has also effect on following nodes
@@ -173,6 +173,7 @@ class MyNeuralNetwork():
 
     def __cycle(self, inputs, expected):
          self.forward_propagation(inputs)
+         #self.predicted = self.cost_function(self.predicted, expected) #!!!Not sure if necessary, cost function should be adapted to return a vector not summed
          self.backward_propagation(expected)
 
     #slow but more computanional efficient on big datasets

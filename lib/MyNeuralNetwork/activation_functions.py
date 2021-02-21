@@ -4,8 +4,8 @@ def softmax(predicted):
     return np.exp(predicted) / np.sum(np.exp(predicted))
 
 #Output of total vector values equals one
-def derivative_softmax(predicted, expected):
-    pass
+def derivative_softmax(x):
+    return x * (1 - x)
 
 #activation function, sets value between 0 and 1
 def sigmoid(x):
