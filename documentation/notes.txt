@@ -163,6 +163,19 @@ Optimizing init is practical to fasten convergence by avoiding vanishing gradien
 
 Bias are usually init to 0, starting of neutral.
 
+EARLY STOPPING
+--------------
+Useful to avoid overtraining that can lead to overfitting. 
+While training neural network on training set cost of test/validation set is calculated too.
+Once a trigger of diminishing performance for validation set (ex. cost of validation set starts to increase), the training stops.
+
+It is considered as a form of regularization.
+
+Stopping too early can be bad as sometimes test set cost will ncrease for some time and decrease back afterward. Looking at graph without early stop can be interesting for this reason. 
+Validation hold outset, means waiting epochs until stopping with the goal of trying to capture costs that are descending back. Recommended is a validation hold outset of size 10% of training data set length.
+
+Afterward right trigger must be used, this can be a cost function or validation funcion (also depending on goal of minimizing false negatives or positives).
+
 TERMS MORE EXPLAINED
 --------------------
 Vanishing gradient problem -> small values are slow to change/learn, leading to no/slow convergence, problem when weights are initialized to zero for example

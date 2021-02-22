@@ -6,16 +6,16 @@ def softmax_compatible(y):
     new = np.zeros((y.shape[0], 2))
     for i in range(y.shape[0]):
         if y[i] == 1:
-            new[i] = np.append(y[i], np.array([0]))
+            new[i] = np.append(y[i], np.array([0], dtype=np.float128))
         elif y[i] == 0:
-            new[i] = np.append(y[i], np.array([1]))
+            new[i] = np.append(y[i], np.array([1], dtype=np.float128))
     return new
 
 def zscore(x):
     return (x - mean(x)) / standard_deviation(x)
 
 def normalization_zscore(x):
-    return np.array([zscore(column) for column in x.T]).T
+    return np.array([zscore(column) for column in x.T], dtype=np.float128).T
 
 def get_train_test(x, y, proportion=0.8):
     shuffle = np.column_stack((x, y))
@@ -39,7 +39,7 @@ def softmax_to_answer2(predicted):
     return predicted
 
 def softmax_to_answer(y):
-    return np.array([softmax_to_answer2(predicted) for predicted in y])
+    return np.array([softmax_to_answer2(predicted) for predicted in y], dtype=np.float128)
 
 #If value higher than division_point (default 0.5), set to one otherwise set to 0
 def sigmoid_to_answer(predicted, division_point):
@@ -51,7 +51,7 @@ def sigmoid_to_answer(predicted, division_point):
     return predicted
 
 def sigmoid_to_answer(y, division_point=0.5):
-    return np.array([softmax_to_answer2(predicted) for predicted in y])
+    return np.array([softmax_to_answer2(predicted) for predicted in y], dtype=np.float128)
 
 
 def relu_to_answer(y):

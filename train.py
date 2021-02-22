@@ -32,7 +32,7 @@ if __name__ == "__main__":
         visualize_data(path)
     x, y = get_x_y(path, list(range(2, 32)), 1)
     data = get_train_test(x, y)
-    NN = MyNeuralNetwork(data[0], data[1], test_set_x=data[2], test_set_y=data[3],deep_layers=2, learning_rate=0.01, n_cycles=100, gradient_descend="mini-batch", b=32, activation_function_layers="tanh", activation_function_output="softmax", weight_init="xavier", cost_function="CE", feedback=True)
+    NN = MyNeuralNetwork(data[0], data[1], test_set_x=data[2], test_set_y=data[3],deep_layers=2, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="tanh", activation_function_output="softmax", weight_init="xavier", cost_function="CE", early_stopping=True, validation_hold_outset="Default", feedback=True)
     NN.fit()
     if input("Evaluate predictions for training set?(y/n):") == "y":
         evaluate(NN.predict(data[0]), data[1])
@@ -40,3 +40,9 @@ if __name__ == "__main__":
         evaluate(NN.predict(data[2]), data[3])
     if input("Save this network?(y/n):") == "y":
         save_neural_network(NN)
+
+#Best learning rate is smallest default one
+#Less deep layers probably better but not accepted based on what is demanded in pdf
+#gradient descend type makes no difference as long as enough n_cycles follow and early stopping is used
+#tanh and relu with appropriate weight init seems superior over sigmoid, tanh most stable
+#cross entropy is default for classification and demanded in subject
