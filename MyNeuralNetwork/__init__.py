@@ -12,3 +12,4 @@ from .evaluation_functions import recall_score
 from .evaluation_functions import f1_score
 from .evaluation_functions import confusion_matrix
 from .evaluation_functions import evaluate
+from .evaluation_functions import compare_different_neural_networks

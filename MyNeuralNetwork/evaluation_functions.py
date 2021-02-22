@@ -1,5 +1,8 @@
 import numpy as np
 import pandas as pn
+import matplotlib
+matplotlib.use('TkAgg') #Make matplotlib compatible with Big Sur on mac
+import matplotlib.pyplot as mpl
 
 def accuracy_score(expected_values, predicted_values):
     correct = 0
@@ -61,3 +64,14 @@ def evaluate(expected_values, predicted_values, class_=1):
     print("f1 score: " + str(f1_score(expected_values, predicted_values, class_)))
     print("confusion matrix:\n" + str(confusion_matrix(expected_values, predicted_values, class_)))
     print("===============================================================================================================")
+
+
+def compare_different_neural_networks(list_of_neural_networks):
+    input("\n==========================================\nPress Enter To Compare All Neural Networks\n==========================================")
+    for NN in list_of_neural_networks:
+        rem = NN.early_stopping
+        NN.early_stopping = False
+        NN.basic_graph()
+        NN.early_stopping = rem
+    mpl.legend()
+    mpl.show()

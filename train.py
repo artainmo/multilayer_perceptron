@@ -23,6 +23,14 @@ def get_x_y(path, column_range_x, column_y):
     y = softmax_compatible(y)
     return x, y
 
+def single_network_evaluation(NN, data):
+    if input("Evaluate predictions for training set?(y/n):") == "y":
+        evaluate(NN.predict(data[0]), data[1])
+    if input("Evaluate predictions for test set?(y/n):") == "y":
+        evaluate(NN.predict(data[2]), data[3])
+    if input("Save this network?(y/n):") == "y":
+        save_neural_network(NN)
+
 if __name__ == "__main__":
     if len(sys.argv) == 1:
         path = "datasets/data.csv"
@@ -32,14 +40,22 @@ if __name__ == "__main__":
         visualize_data(path)
     x, y = get_x_y(path, list(range(2, 32)), 1)
     data = get_train_test(x, y)
-    NN = MyNeuralNetwork(data[0], data[1], test_set_x=data[2], test_set_y=data[3],deep_layers=2, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="tanh", activation_function_output="softmax", weight_init="xavier", cost_function="CE", early_stopping=True, validation_hold_outset="Default", feedback=True)
+    NN = MyNeuralNetwork(name="mini-batch | tanh", inputs=data[0], expected=data[1], test_set_x=data[2], test_set_y=data[3], deep_layers=2, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="tanh", activation_function_output="softmax", weight_init="xavier", cost_function="CE", early_stopping=True, validation_hold_outset="Default", feedback=True)
     NN.fit()
-    if input("Evaluate predictions for training set?(y/n):") == "y":
-        evaluate(NN.predict(data[0]), data[1])
-    if input("Evaluate predictions for test set?(y/n):") == "y":
-        evaluate(NN.predict(data[2]), data[3])
-    if input("Save this network?(y/n):") == "y":
-        save_neural_network(NN)
+    single_network_evaluation(NN, data)
+    NN2 = MyNeuralNetwork(name="batch | tanh", inputs=data[0], expected=data[1], test_set_x=data[2], test_set_y=data[3], deep_layers=2, learning_rate=0.01, n_cycles=1000, gradient_descend="batch", b=32, activation_function_layers="tanh", activation_function_output="softmax", weight_init="xavier", cost_function="CE", early_stopping=True, validation_hold_outset="Default", feedback=True)
+    NN2.fit()
+    single_network_evaluation(NN2, data)
+    NN3 = MyNeuralNetwork(name="stochastic | tanh", inputs=data[0], expected=data[1], test_set_x=data[2], test_set_y=data[3], deep_layers=2, learning_rate=0.01, n_cycles=10000, gradient_descend="stochastic", b=32, activation_function_layers="tanh", activation_function_output="softmax", weight_init="xavier", cost_function="CE", early_stopping=True, validation_hold_outset="Default", feedback=True)
+    NN3.fit()
+    single_network_evaluation(NN3, data)
+    NN4 = MyNeuralNetwork(name="mini-batch | sigmoid", inputs=data[0], expected=data[1], test_set_x=data[2], test_set_y=data[3], deep_layers=2, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="sigmoid", activation_function_output="softmax", weight_init=None, cost_function="CE", early_stopping=True, validation_hold_outset="Default", feedback=True)
+    NN4.fit()
+    single_network_evaluation(NN4, data)
+    NN5 = MyNeuralNetwork(name="mini-batch | relu", inputs=data[0], expected=data[1], test_set_x=data[2], test_set_y=data[3], deep_layers=2, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="relu", activation_function_output="softmax", weight_init="he", cost_function="CE", early_stopping=True, validation_hold_outset="Default", feedback=True)
+    NN5.fit()
+    single_network_evaluation(NN5, data)
+    compare_different_neural_networks([NN, NN2, NN3, NN4, NN5])
 
 #Best learning rate is smallest default one
 #Less deep layers probably better but not accepted based on what is demanded in pdf

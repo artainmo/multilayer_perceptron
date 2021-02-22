@@ -32,7 +32,8 @@ def get_mini_batch(inputs, expected, b):
         last = pos
 
 class MyNeuralNetwork():
-    def __init__(self, inputs, expected, test_set_x=None, test_set_y=None, deep_layers=2, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="tanh", activation_function_output="softmax", weight_init="xavier", cost_function="CE", early_stopping=False, validation_hold_outset="Default", feedback=True):
+    def __init__(self, name, inputs, expected, test_set_x=None, test_set_y=None, deep_layers=2, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="tanh", activation_function_output="softmax", weight_init="xavier", cost_function="CE", early_stopping=False, validation_hold_outset="Default", feedback=True):
+        self.name = name
         if gradient_descend == "stochastic":
             self.gradient_descend = self.__stochastic
         elif gradient_descend == "batch":
@@ -119,6 +120,7 @@ class MyNeuralNetwork():
 
     def show_all(self):
         print("--------------------------------------DEEP NEURAL NETWORK STRUCTURE--------------------------------------")
+        print("NEURAL NETWORK NAME -> " + str(self.name))
         show_object("Layer", self.layers)
         show_object("Weight", self.weights)
         show_object("Bias", self.bias)
@@ -164,17 +166,20 @@ class MyNeuralNetwork():
             print("Epoch: " + str(epoch) + "/" + str(self.n_cycles) + " -> Cost: " + str(total_error))
         return total_error
 
+    def basic_graph(self):
+        mpl.plot(range(len(self.costs)), self.costs, label=str(self.name) + " training set")
+        if self.early_stopping == True:
+            mpl.plot(range(len(self.costs[0:self.lowest_cost_index])), self.costs[0:self.lowest_cost_index], label=str(self.name) + " training set stop")
+        if self.test_set_x is not None and self.test_set_y is not None:
+            mpl.plot(range(len(self.costs_test_set)), self.costs_test_set, label=str(self.name) + " test set")
+            if self.early_stopping == True:
+                mpl.plot(range(len(self.costs_test_set[0:self.lowest_cost_index])), self.costs_test_set[0:self.lowest_cost_index], label=str(self.name) + " test set stop")
+
     def __feedback_cost_graph(self):
         input("========================\nPress Enter To See Graph\n========================")
+        self.basic_graph()
         mpl.title("Starting Cost: " + str(round(self.costs[0], 5))  + "\nFinal Cost: " + str(round(self.costs[-1], 5)))
-        mpl.plot(range(len(self.costs)), self.costs, label="training set")
-        if self.early_stopping == True:
-            mpl.plot(range(len(self.costs[0:self.lowest_cost_index])), self.costs[0:self.lowest_cost_index], label="training set stop")
-        if self.test_set_x is not None and self.test_set_y is not None:
-            mpl.plot(range(len(self.costs_test_set)), self.costs_test_set, label="test set")
-            if self.early_stopping == True:
-                mpl.plot(range(len(self.costs_test_set[0:self.lowest_cost_index])), self.costs_test_set[0:self.lowest_cost_index], label="test set stop")
-            mpl.legend()
+        mpl.legend()
         mpl.show()
 
     #create output based on input and weights and biases
