@@ -1,6 +1,7 @@
 import numpy as np
 from .MyStats import *
 
+#Softmax should be used on at least two output nodes, this transforms the y from size one to two
 def softmax_compatible(y):
     new = np.zeros((y.shape[0], 2))
     for i in range(y.shape[0]):
@@ -25,3 +26,33 @@ def get_train_test(x, y, proportion=0.8):
     training_set = shuffle[:training_lenght]
     test_set = shuffle[training_lenght:]
     return (training_set[:,:-y.shape[1]], training_set[:,-y.shape[1]:], test_set[:,:-y.shape[1]], test_set[:,-y.shape[1]:]) #(train_x, train_y, test_x, test_y)
+
+
+#Set highest value to one and rest to zero
+def softmax_to_answer2(predicted):
+    _max = max(predicted)
+    for i in range(predicted.shape[0]):
+        if predicted[i] == _max:
+            predicted[i] = 1
+        else:
+            predicted[i] = 0
+    return predicted
+
+def softmax_to_answer(y):
+    return np.array([softmax_to_answer2(predicted) for predicted in y])
+
+#If value higher than division_point (default 0.5), set to one otherwise set to 0
+def sigmoid_to_answer(predicted, division_point):
+    for i in range(predicted.shape[0]):
+        if predicted[i] > division_point:
+            predicted[i] = 1
+        else:
+            predicted[i] = 0
+    return predicted
+
+def sigmoid_to_answer(y, division_point=0.5):
+    return np.array([softmax_to_answer2(predicted) for predicted in y])
+
+
+def relu_to_answer(y):
+    return y

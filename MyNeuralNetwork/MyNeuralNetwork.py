@@ -6,6 +6,7 @@ import matplotlib.pyplot as mpl
 from .activation_functions import *
 from .init_neural_network import *
 from .cost_functions import *
+from .manipulate_data import *
 
 def show_object(name, obj):
     print(name + ":")
@@ -31,7 +32,7 @@ def get_mini_batch(inputs, expected, b):
         last = pos
 
 class MyNeuralNetwork():
-    def __init__(self, inputs, expected, deep_layers=2, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="tanh", activation_function_output="softmax", weight_init="xavier", cost_function="CE", feedback=True):
+    def __init__(self, inputs, expected, test_set_x=None, test_set_y=None, deep_layers=2, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="tanh", activation_function_output="softmax", weight_init="xavier", cost_function="CE", feedback=True):
         if gradient_descend == "stochastic":
             self.gradient_descend = self.__stochastic
         elif gradient_descend == "batch":
@@ -56,12 +57,15 @@ class MyNeuralNetwork():
         if activation_function_output == "sigmoid":
             self.output_activation_function = sigmoid
             self.derivative_output_activation_function = derivative_sigmoid
+            self.probabilities_to_answer = sigmoid_to_answer
         elif activation_function_output == "softmax":
             self.output_activation_function = softmax
             self.derivative_output_activation_function = derivative_softmax
+            self.probabilities_to_answer = softmax_to_answer
         elif activation_function_output == "relu":
             self.output_activation_function = call_relu
             self.derivative_output_activation_function = call_derivative_relu
+            self.probabilities_to_answer = relu_to_answer
         else:
             print("Error: My_Neural_Network activation function output")
             exit()
@@ -95,12 +99,15 @@ class MyNeuralNetwork():
         self.n_cycles = n_cycles
         self.b = b #mini-batch size
         self.costs = []
+        self.costs_test_set = []
         self.feedback = feedback
+        self.test_set_x = test_set_x
+        self.test_set_y = test_set_y
         if self.feedback == True:
             self.show_all()
 
     def show_all(self):
-        print("---------------------------------------------------------------------------------")
+        print("--------------------------------------DEEP NEURAL NETWORK STRUCTURE--------------------------------------")
         show_object("Layer", self.layers)
         show_object("Weight", self.weights)
         show_object("Bias", self.bias)
@@ -113,17 +120,28 @@ class MyNeuralNetwork():
         print(self.derivative_layers_activation_function)
         print(self.output_activation_function)
         print(self.derivative_output_activation_function)
-        print("---------------------------------------------------------------------------------")
+        print(self.probabilities_to_answer)
+        print("---------------------------------------------------------------------------------------------------------")
 
-    def one_cost(self, expected): #cost function calculates total error of made prediction, mean over output nodes
-        total_error = self.cost_function(self.predicted, expected)
+    def cost(self, epoch=None, feedback=False): #cost function calculates total error of made prediction, mean over output nodes
+        total_error = np.sum([self.cost_function(predicted, expected) for predicted, expected in zip(self.predict(self.inputs, probabilities_to_answer=False), self.expected)]) / self.inputs.shape[0]
         self.costs.append(total_error)
+        if self.test_set_x is not None and self.test_set_y is not None:
+            total_error_test = np.sum([self.cost_function(predicted, expected) for predicted, expected in zip(self.predict(self.test_set_x, probabilities_to_answer=False), self.test_set_y)]) / self.test_set_x.shape[0]
+            self.costs_test_set.append(total_error_test)
+            if feedback == True:
+                print("Epoch: " + str(epoch) + "/" + str(self.n_cycles) + " -> Cost: " + str(total_error) + " --> Test set Cost: " + str(total_error_test))
+        elif feedback == True:
+            print("Epoch: " + str(epoch) + "/" + str(self.n_cycles) + " -> Cost: " + str(total_error))
         return total_error
 
     def __feedback_cost_graph(self):
         input("========================\nPress Enter To See Graph\n========================")
         mpl.title("Starting Cost: " + str(round(self.costs[0], 5))  + "\nFinal Cost: " + str(round(self.costs[-1], 5)))
-        mpl.plot(range(len(self.costs)), self.costs)
+        mpl.plot(range(len(self.costs)), self.costs, label="trainig set")
+        if self.test_set_x is not None and self.test_set_y is not None:
+            mpl.plot(range(len(self.costs_test_set)), self.costs_test_set, label="test set")
+            mpl.legend()
         mpl.show()
 
     #create output based on input and weights and biases
@@ -161,15 +179,14 @@ class MyNeuralNetwork():
         self.deep_gradient_weight = copy_object_shape(self.weights[0:-1])
         self.deep_gradient_bias = copy_object_shape(self.bias[0:-1])
 
-    def __update_weights(self, epoch, expected):
+    def __update_weights(self, _epoch):
         self.weights[-1] = self.weights[-1] - (self.alpha * self.output_gradient_weight[0])
         self.bias[-1] = self.bias[-1] - (self.alpha * self.output_gradient_bias[0])
         for i in range(len(self.weights) - 2, -1, -1): #range starts from last non-output weights until first weights (index 0)
             self.weights[i] = self.weights[i] - (self.alpha * self.deep_gradient_weight[i])
             self.bias[i] = self.bias[i] - (self.alpha * self.deep_gradient_bias[i])
         self.__reset_gradients()
-        if self.feedback == True:
-            print("Epoch: " + str(epoch) + "/" + str(self.n_cycles) + " -> Cost: " + str(self.one_cost(expected)))
+        self.cost(epoch=_epoch, feedback=self.feedback)
 
     def __cycle(self, inputs, expected):
          self.forward_propagation(inputs)
@@ -182,7 +199,7 @@ class MyNeuralNetwork():
         for i in range(self.n_cycles):
             for inputs, expected in zip(self.inputs, self.expected):#complete batch cycle
                 self.__cycle(inputs, expected)
-            self.__update_weights(i + 1, expected)
+            self.__update_weights(i + 1)
 
     #mini-batch sits between stochastic and batch, trying to optimize benefits of both, and is the recommended variant of gradient descend
     def __mini_batch(self):
@@ -191,7 +208,7 @@ class MyNeuralNetwork():
             inputs, expected = next(generator)
             for _inputs, _expected in zip(self.inputs, self.expected):#complete batch cycle
                 self.__cycle(_inputs, _expected)
-            self.__update_weights(i + 1, _expected)
+            self.__update_weights(i + 1)
 
     #faster convergence on small datasets but slower on big datasets due to constant weight update
     #can avoid local minimas or premature convergence but has higher variance in results due to randomness
@@ -200,22 +217,26 @@ class MyNeuralNetwork():
         for i in range(self.n_cycles):
             random = randint(0, length)
             self.__cycle(self.inputs[random], self.expected[random])
-            self.__update_weights(i + 1, self.expected[random])
+            self.__update_weights(i + 1)
 
 
     def fit(self):
         input("=============================\nPress Enter To Start Training\n=============================")
         self.costs.clear()
+        self.costs_test_set.clear()
         self.gradient_descend()
         if self.feedback == True:
             self.__feedback_cost_graph()
 
-    def predict(self, inputs):
+    def predict(self, inputs, probabilities_to_answer=True):
         answers = np.zeros((inputs.shape[0], self.expected.shape[1]))
         for i in range(inputs.shape[0]):
             self.forward_propagation(inputs[i])
             answers[i] = self.predicted
-        return answers
+        if probabilities_to_answer == True:
+            return self.probabilities_to_answer(answers)
+        else:
+            return answers
 
 
 # if __name__ == "__main__":

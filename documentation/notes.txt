@@ -219,8 +219,18 @@ DEBUGGING A LEARNING ALGORITHM
 
 EVALUATION
 ----------
+There are two types of errors that occur in a classification algorithm
+False positives, or predicting "yes", while the expected answer was "no"
+False negatives, or predicting "no", while the expected answer was "yes"
 
-!!!
+In sigmoid probabilities to answer functions, you can for example change the "division point" to aim more at minimizing one error or the other.
+
+Different measures are used:
+Accuracy score: Gives % of correct answers
+precision score: Appropriate when trying to minimize false positives
+Recall score: Appropriate when trying to minimize false negatives
+f1 score: Is combination of precision and recall, used when trying to maximize both false positives and negatives
+Confusion matrix: Gives an overview of both false negatives and positives
 
 OVERFITTING
 -----------

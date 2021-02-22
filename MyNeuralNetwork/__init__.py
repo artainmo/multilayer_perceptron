@@ -5,3 +5,10 @@ from .manipulate_data import get_train_test
 from .manipulate_data import softmax_compatible
 
 from .MyStats import *
+
+from .evaluation_functions import accuracy_score
+from .evaluation_functions import precision_score
+from .evaluation_functions import recall_score
+from .evaluation_functions import f1_score
+from .evaluation_functions import confusion_matrix
+from .evaluation_functions import evaluate

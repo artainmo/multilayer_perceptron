@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pn
 import sys
 import os
-from .MyNeuralNetwork import *
+from MyNeuralNetwork import *
 import pickle
 
 def save_neural_network(NN):
@@ -28,9 +28,15 @@ if __name__ == "__main__":
         path = "datasets/data.csv"
     else:
         path = sys.argv[1]
-    # visualize_data(path)
+    if input("Visualize the data?(y/n):") == "y":
+        visualize_data(path)
     x, y = get_x_y(path, list(range(2, 32)), 1)
     data = get_train_test(x, y)
-    NN = MyNeuralNetwork(data[0], data[1], deep_layers=2, learning_rate=0.01, n_cycles=50, gradient_descend="batch", b=32, activation_function_layers="tanh", activation_function_output="softmax", weight_init="xavier", cost_function="CE", feedback=True)
+    NN = MyNeuralNetwork(data[0], data[1], test_set_x=data[2], test_set_y=data[3],deep_layers=2, learning_rate=0.01, n_cycles=100, gradient_descend="mini-batch", b=32, activation_function_layers="tanh", activation_function_output="softmax", weight_init="xavier", cost_function="CE", feedback=True)
     NN.fit()
-    save_neural_network(NN)
+    if input("Evaluate predictions for training set?(y/n):") == "y":
+        evaluate(NN.predict(data[0]), data[1])
+    if input("Evaluate predictions for test set?(y/n):") == "y":
+        evaluate(NN.predict(data[2]), data[3])
+    if input("Save this network?(y/n):") == "y":
+        save_neural_network(NN)
