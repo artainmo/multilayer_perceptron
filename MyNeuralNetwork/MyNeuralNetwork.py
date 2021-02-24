@@ -92,7 +92,6 @@ class MyNeuralNetwork():
         self.expected = expected
         self.layers = init_layers(deep_layers + 1, inputs.shape[1], self.expected.shape[1])
         self.weights = init_weights(self.layers, inputs.shape[1], self.expected.shape[1], weight_init)
-        self.delta = copy_object_shape(self.weights) #delta is used in backpropagation to indicate the error of each layer final activation value
         self.bias = init_bias(self.weights)
         self.__reset_gradients()
         self.alpha = learning_rate
@@ -194,7 +193,7 @@ class MyNeuralNetwork():
         Delta = self.derivative_cost_function(self.predicted, expected) * self.derivative_output_activation_function(self.predicted)
         return np.dot(self.layers[-2].T, Delta), Delta
 
-    def __deep_layer_partial_derivatives(self, position, Delta): #More complex as has change in node has also effect on following nodes
+    def __deep_layer_partial_derivatives(self, position, Delta):
         Delta = (np.dot(self.weights[position + 1], Delta.T) * (self.derivative_layers_activation_function(self.layers[position + 1])).T).T
         return np.dot(self.layers[position].T, Delta), Delta
 
@@ -228,9 +227,6 @@ class MyNeuralNetwork():
 
     def __cycle(self, inputs, expected):
          self.forward_propagation(inputs)
-         if self.early_stopping == True:
-             self.last_weights = self.weights
-             self.last_bias = self.bias
          self.backward_propagation(expected)
 
     #slow but more computanional efficient on big datasets
@@ -273,6 +269,7 @@ class MyNeuralNetwork():
         input("=============================\nPress Enter To Start Training\n=============================")
         self.costs.clear()
         self.costs_test_set.clear()
+        self.__reset_gradients()
         self.gradient_descend()
         if self.feedback == True:
             self.__feedback_cost_graph()
@@ -287,9 +284,64 @@ class MyNeuralNetwork():
         else:
             return answers
 
+    def __gradients_to_vector(self):
+        back_prop_gradient = np.concatenate((self.output_gradient_weight[0].flatten(), self.output_gradient_bias[0].flatten()))
+        for g_w, g_b in zip(self.deep_gradient_weight, self.deep_gradient_bias):
+            back_prop_gradient = np.concatenate((back_prop_gradient, g_w.flatten(), g_b.flatten()))
+        return back_prop_gradient
+
+    def __vectorize_numerical_gradients(self, inputs, expected, epsilon=1e-4):
+        numerical_gradient = np.array([])
+        for i in range(len(self.weights)):
+            for l in range(self.weights[i].shape[0]):
+                for k in range(self.weights[i].shape[1]):
+                    rem = self.predicted
+                    self.weights[i][l][k] = self.weights[i][l][k] + epsilon
+                    self.forward_propagation(inputs)
+                    Jmax = self.cost_function(self.predicted, expected)
+                    self.weights[i][l][k] = self.weights[i][l][k] - (2*epsilon)
+                    self.forward_propagation(inputs)
+                    Jmin = self.cost_function(self.predicted, expected)
+                    self.weights[i][l][k] = self.weights[i][l][k] + epsilon
+                    self.predicted = rem
+                    numerical_gradient = np.append(numerical_gradient, (Jmax - Jmin) / (2*epsilon))
+            for l in range(self.bias[i].shape[1]):
+                rem = self.predicted
+                self.bias[i][0][l] = self.bias[i][0][l] + epsilon
+                self.forward_propagation(inputs)
+                Jmax = self.cost_function(self.predicted, expected)
+                self.bias[i][0][l] = self.bias[i][0][l] - (2*epsilon)
+                self.forward_propagation(inputs)
+                Jmin = self.cost_function(self.predicted, expected)
+                self.bias[i][0][l] = self.bias[i][0][l] + epsilon
+                self.predicted = rem
+                numerical_gradient = np.append(numerical_gradient, (Jmax - Jmin) / (2*epsilon))
+        return numerical_gradient
+
+    def check_gradients(self):
+        for i in range(10):
+            random = randint(0, self.inputs.shape[0] - 1)
+            self.__reset_gradients()
+            self.__cycle(self.inputs[random], self.expected[random]) #Compute backprop gradients
+            back_prop_gradient = np.sqrt(np.square(self.__gradients_to_vector())) #gradients to vector, make them all positive
+            numerical_gradient = np.sqrt(np.square(self.__vectorize_numerical_gradients(self.inputs[random], self.expected[random]))) #numerical gradients to vector make them all positive
+            difference = np.copy(back_prop_gradient)
+            for i in range(back_prop_gradient.shape[0]):
+                if back_prop_gradient[i] > numerical_gradient[i]:
+                    difference[i] = back_prop_gradient[i] - numerical_gradient[i]
+                else:
+                    difference[i] = numerical_gradient[i] - back_prop_gradient[i]
+            relative_error = minmax_normalization(difference) / (minmax_normalization(back_prop_gradient) + minmax_normalization(numerical_gradient))
+            for rel_err in relative_error:
+                if rel_err > 1e-4:
+                    print("Gradient check wrong" + " - difference: " + str(rel_err))
+                else:
+                    print("Gradient check correct"+ " - difference: " + str(rel_err))
+        input("=======================\nPress Enter To Continue\n=======================")
+
 
 # if __name__ == "__main__":
 #     x = np.array([[0,0,1,1,0,0],[0,1,1,1,0,0],[1,0,1,0,0,0],[1,1,1,0,0,0]]) #4X3 -> 4 examples and 3 inputs expected
 #     y = np.array([[0, 1],[1, 1],[1, 0],[1, 0]]) #4X2 -> 4 examples and 2 outputs expected
 #     test = MyNeuralNetwork(x, y)
-#     test.fit()
+# test.fit()

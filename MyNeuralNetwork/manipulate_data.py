@@ -15,7 +15,24 @@ def zscore(x):
     return (x - mean(x)) / standard_deviation(x)
 
 def normalization_zscore(x):
+    if x.ndim == 1:
+        x = np.array([x])
+        x = x.T
     return np.array([zscore(column) for column in x.T], dtype=np.float128).T
+
+def minmax_normalization(x_values):
+    if x_values.ndim == 1:
+        x_values = np.array([x_values])
+        x_values = x_values.T
+    i = 0
+    x_values = x_values.transpose()
+    while i < x_values.shape[0]:
+        max_ = max(x_values[i])
+        min_ = min(x_values[i])
+        range = max_ - min_
+        x_values[i] = np.divide(np.subtract(x_values[i], min_), range)
+        i += 1
+    return x_values.transpose()
 
 def get_train_test(x, y, proportion=0.8):
     shuffle = np.column_stack((x, y))

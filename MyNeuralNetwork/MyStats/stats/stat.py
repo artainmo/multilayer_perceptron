@@ -2,13 +2,13 @@ import numpy as np
 
 
 def count(column):
-    if isinstance(column[0], (int, float)) == False:
+    if isinstance(column[0], (int, float, np.floating)) == False:
         return np.nan
     return column.shape[0]
 
 
 def min(column):
-    if isinstance(column[0], (int, float)) == False:
+    if isinstance(column[0], (int, float, np.floating)) == False:
         return np.nan
     min = np.Inf
     for value in column:
@@ -18,7 +18,7 @@ def min(column):
 
 
 def max(column):
-    if isinstance(column[0], (int, float)) == False:
+    if isinstance(column[0], (int, float, np.floating)) == False:
         return np.nan
     max = np.NINF
     for value in column:
@@ -28,7 +28,9 @@ def max(column):
 
 
 def mean(column):
-    if isinstance(column[0], (int, float)) == False:
+    if isinstance(column[0], (int, float, np.floating)) == False:
+        print(column[0])
+        print(type(column[0]))
         return np.nan
     try:
         column = column[~np.isnan(column)]
@@ -41,7 +43,7 @@ def mean(column):
 
 
 def median(column):
-    if isinstance(column[0], (int, float)) == False:
+    if isinstance(column[0], (int, float, np.floating)) == False:
         return np.nan
     try:
         column = column[~np.isnan(column)]
@@ -63,7 +65,7 @@ def median(column):
 
 
 def standard_deviation(column):
-    if isinstance(column[0], (int, float)) == False:
+    if isinstance(column[0], (int, float, np.floating)) == False:
         return np.nan
     try:
         column = column[~np.isnan(column)]
@@ -78,7 +80,7 @@ def standard_deviation(column):
 
 
 def quartiles_25(column):
-    if isinstance(column[0], (int, float)) == False:
+    if isinstance(column[0], (int, float, np.floating)) == False:
         return np.nan
     column = np.sort(column);
     lenght = column.shape[0]
@@ -91,7 +93,7 @@ def quartiles_25(column):
 
 
 def quartiles_75(column):
-    if isinstance(column[0], (int, float)) == False:
+    if isinstance(column[0], (int, float, np.floating)) == False:
         return np.nan
     column = np.sort(column);
     lenght = column.shape[0]
@@ -116,7 +118,7 @@ def mode(column):
 # If skewness is negative, the mean is smaller than the median and the distribution has a large tail of small values.
 # Machine learning models do not function well with skewed data
 def skewness(column):
-    if isinstance(column[0], (int, float)) == False:
+    if isinstance(column[0], (int, float, np.floating)) == False:
         return np.nan
     return (mean(column) - median(column)) / standard_deviation(column)
 
@@ -124,7 +126,7 @@ def skewness(column):
 #Negative kurtosis indicates a broad flat distribution.
 #Datasets with high kurtosis have a lot of outliers, not good for ML
 def kurtosis(column):
-    if isinstance(column[0], (int, float)) == False:
+    if isinstance(column[0], (int, float, np.floating)) == False:
         return np.nan
     column = column[~np.isnan(column)]
     summation1 = 0
