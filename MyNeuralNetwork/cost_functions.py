@@ -2,6 +2,8 @@ import numpy as np
 
 #Return vector of output node errors, if you want one cost sum them together
 def mean_square_error(predicted, expected):
+    if predicted.ndim == 1:
+        predicted = np.array([predicted])
     return np.sum(np.square(predicted - expected)) / predicted.shape[1]
 
 def derivative_mean_square_error(predicted, expected):

@@ -151,12 +151,6 @@ class MyNeuralNetwork():
         show_object("Output gradient bias", self.output_gradient_bias)
         show_object("Deep gradient weight", self.deep_gradient_weight)
         show_object("Deep gradient bias", self.deep_gradient_bias)
-        print(self.gradient_descend)
-        print(self.layers_activation_function)
-        print(self.derivative_layers_activation_function)
-        print(self.output_activation_function)
-        print(self.derivative_output_activation_function)
-        print(self.probabilities_to_answer)
         print("---------------------------------------------------------------------------------------------------------")
 
     #If no lowering of costs compared to lowest cost after 50epochs, early stop and whenever stopping always keep weights and bias associated with lowest cost and cut graphs until lowest cost
@@ -205,7 +199,6 @@ class MyNeuralNetwork():
         mpl.legend()
         mpl.show()
 
-    #create output based on input and weights and biases
     def forward_propagation(self, inputs):
         self.layers[0] = np.array([inputs], dtype=np.float128)
         for i in range(len(self.layers) - 2):
@@ -221,10 +214,6 @@ class MyNeuralNetwork():
         Delta = (np.dot(self.weights[position + 1], Delta.T) * (self.derivative_layers_activation_function(self.layers[position + 1])).T).T
         return np.dot(self.layers[position].T, Delta), Delta
 
-    #Adjust weight and bias values, based on gradient descend
-    #gradient descend searches for error minima point
-    #gradient = derivative = slope = rate of change
-    #partial derivatives are used to verify how each weight and bias affect the error individually
     def backward_propagation(self, expected):
         gradient, Delta = self.__output_layer_partial_derivatives(expected)
         self.output_gradient_weight[0] = self.output_gradient_weight[0] + gradient
@@ -253,8 +242,6 @@ class MyNeuralNetwork():
          self.forward_propagation(inputs)
          self.backward_propagation(expected)
 
-    #slow but more computanional efficient on big datasets
-    #Stable convergence but risk of local minima or premature convergence
     def __batch(self):
         for i in range(self.n_cycles):
             for inputs, expected in zip(self.inputs, self.expected):#complete batch cycle
@@ -264,7 +251,6 @@ class MyNeuralNetwork():
                 print("Early Stopping was used")
                 break
 
-    #mini-batch sits between stochastic and batch, trying to optimize benefits of both, and is the recommended variant of gradient descend
     def __mini_batch(self):
         generator = get_mini_batch(self.inputs, self.expected, self.b)
         for i in range(self.n_cycles):
@@ -276,8 +262,6 @@ class MyNeuralNetwork():
                 print("Early Stopping was used")
                 break
 
-    #faster convergence on small datasets but slower on big datasets due to constant weight update
-    #can avoid local minimas or premature convergence but has higher variance in results due to randomness
     def __stochastic(self):
         length = len(self.inputs) - 1
         for i in range(self.n_cycles):
@@ -307,6 +291,16 @@ class MyNeuralNetwork():
             return self.probabilities_to_answer(answers)
         else:
             return answers
+
+    def training_metric_history(self):
+        input("================================================\nPress Enter To View Training Cost Metric History\n================================================")
+        if self.test_set_x is not None and self.test_set_y is not None:
+            for epoch in range(len(self.costs)):
+                print("Epoch: " + str(epoch + 1) + "/" + str(self.n_cycles) + " -> Cost: " + str(self.costs[epoch]) + " --> Test set Cost: " + str(self.costs_test_set[epoch]))
+        else:
+            for epoch in range(len(self.costs)):
+                print("Epoch: " + str(epoch + 1) + "/" + str(self.n_cycles) + " -> Cost: " + str(self.costs[epoch]))
+
 
     def __gradients_to_vector(self):
         back_prop_gradient = np.concatenate((self.output_gradient_weight[0].flatten(), self.output_gradient_bias[0].flatten()))
