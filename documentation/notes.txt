@@ -205,7 +205,10 @@ Afterward right trigger must be used, this can be a cost function or validation 
 
 MOMENTUM AND NESTEROV METHODS
 -----------------------------
-Momentum is an optimization method invented for reducing high variance in SGD. It also fastens convergence. Symbolized by Gamma hyper-parameter.
+Momentum is an optimization method invented for reducing high variance in SGD, it does this through faster convergence, like a ball rolling down a hill.
+Gamma/rho with default value 0.9 and value 0 to deactivate as momentum weight/neural network hyperparameter and makes use of EMAs (exponential moving average). 
+It simply adds to weight updating for each weight -> + gamma * velocity
+Velocity being a value starting  with zero and accumulating values that are re-used is equal to -> velocity - learning rate * gradient
 
 Too high momentum can lead to the missing of local/global minima (which you do or do not want). If you do not want to miss it Nesterov method can be used who will slow down convergence when approaching a local minima.
 
@@ -333,3 +336,4 @@ https://www.machinecurve.com
 https://www.deeplearning.ai
 http://neuralnetworksanddeeplearning.com
 https://medium.com/@ODSC
+https://mlfromscratch.com/
