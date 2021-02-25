@@ -1,4 +1,6 @@
 from .MyNeuralNetwork import MyNeuralNetwork
+from .MyNeuralNetwork import save_neural_network
+from .MyNeuralNetwork import load_neural_network
 
 from .manipulate_data import normalization_zscore
 from .manipulate_data import minmax_normalization

@@ -11,3 +11,6 @@ clean:
 	rm -rf ./lib/MyNeuralNetwork/MyStats/__pycache__
 	rm -rf ./lib/MyNeuralNetwork/MyStats/stats/__pycache__
 	rm -rf ./lib/MyNeuralNetwork/__pycache__
+	rm -rf ./documentation/.DS_Store
+	rm -rf ./.DS_Store
+	rm -rf ./datasets/.DS_Store

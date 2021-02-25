@@ -7,9 +7,7 @@ if __name__ == "__main__":
     else:
         path = sys.argv[1]
     x, y = get_x_y(path, list(range(2, 32)), 1)
-    NN = MyNeuralNetwork(x, y, test_set_x=data[2], test_set_y=data[3],deep_layers=2, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="tanh", activation_function_output="softmax", weight_init="xavier", cost_function="CE", early_stopping=True, validation_hold_outset="Default", feedback=True)
-    NN.weights = pickle.load(open("saved/weights.pkl", 'rb', closefd=True))
-    NN.bias = pickle.load(open("saved/bias.pkl", 'rb', closefd=True))
+    NN = load_neural_network("saved/neural_network.pkl")
     predictions = NN.predict(x)
     if input("Evaluate predictions?(y/n):") == "y":
         evaluate(predictions, y)

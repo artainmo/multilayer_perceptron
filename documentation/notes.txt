@@ -115,6 +115,8 @@ When alpha is too big potentially no convergence or less precision as it will ho
 
 GRADIENT DESCEND
 ----------------
+Gradient descend uses derivatives or slope of cost function to find the global minima in cost function to minimize the cost by going in opposite direction of gradient. Neural Networks uses partial derivatives for each weight and bias to minimize the error.
+
 Stochastic:
 Faster convergence on small datasets but slower on big datasets due to constant weight update
 Can avoid local minimas or premature convergence but has higher variance in results due to randomness
@@ -163,23 +165,38 @@ Optimizing init is practical to fasten convergence by avoiding vanishing gradien
 
 Bias are usually init to 0, starting of neutral.
 
+GRADIENT CHECKING
+-----------------
+Bugs can occur during your implementation of backpropagation, they can be subtle because the cost could properly descend but still the bug could lower the overall performance.
+
+Gradient checking is used to debug backpropagation, by estimating them with numerical gradients(slope between two points around the one cost point) and comparing them with backpropagation gradients.
+
 EARLY STOPPING
 --------------
 Useful to avoid overtraining that can lead to overfitting. 
 While training neural network on training set cost of test/validation set is calculated too.
 Once a trigger of diminishing performance for validation set (ex. cost of validation set starts to increase), the training stops.
 
-It is considered as a form of regularization.
+It is considered as a form of regularization(regularization methods limit over-fitting)
 
 Stopping too early can be bad as sometimes test set cost will ncrease for some time and decrease back afterward. Looking at graph without early stop can be interesting for this reason. 
 Validation hold outset, means waiting epochs until stopping with the goal of trying to capture costs that are descending back. Recommended is a validation hold outset of size 10% of training data set length.
 
 Afterward right trigger must be used, this can be a cost function or validation funcion (also depending on goal of minimizing false negatives or positives).
 
+MOMENTUM AND NESTEROV METHODS
+-----------------------------
+Momentum is an optimization method invented for reducing high variance in SGD. It also fastens convergence. Symbolized by Gamma hyperparameter.
+
+Too high momentum can lead to the missing of local/global minima (which you do or do not want). If you do not want to miss it nesterov method can be used who will slow down convergence when approaching a local minima.
+
+
+
 TERMS MORE EXPLAINED
 --------------------
 Vanishing gradient problem -> small values are slow to change/learn, leading to no/slow convergence, problem when weights are initialized to zero for example
-non-relevant nodes -> Some nodes that are not relevant should be deactivated by the activation function setting its value to 0. ReLU does that best.
+non-relevant nodes -> Some nodes that are not relevant should be deactivated by the activation function setting its value to 0. ReLU does this best. Proper data features selection helps.
+local/global minima -> Gradient descend weak point is to get stuck in the local minima instead of continuing towards the global minima as it can difficultly know when it arrived at the global minima or not. Local minima are low cost points whereby the cost increases afterward, but later on decrease even more to a potential global minima, global minima being the lowest cost point.
 
 ================
 DATA PREPARATION
@@ -266,11 +283,12 @@ SOURCES
 
 Nerual networks, a visual introduction for beginners - Michael Taylor
 
-https://www.coursera.org/learn/machine-learning/ - Andrew Ng
-https://course.elementsofai.com/
+https://www.coursera.org/learn/machine-learning - Andrew Ng
+https://course.elementsofai.com
 
-https://towardsdatascience.com/
-https://www.machinecurve.com/
-https://www.deeplearning.ai/
-https://machinelearningmastery.com/
-http://neuralnetworksanddeeplearning.com/chap2.html
+https://towardsdatascience.com
+https://machinelearningmastery.com
+https://ruder.io
+https://www.machinecurve.com
+https://www.deeplearning.ai
+http://neuralnetworksanddeeplearning.com

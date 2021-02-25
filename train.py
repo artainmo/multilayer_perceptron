@@ -3,13 +3,6 @@ import pandas as pn
 import sys
 import os
 from MyNeuralNetwork import *
-import pickle
-
-def save_neural_network(NN):
-    pickle.dump(NN.weights, open("saved/weights.pkl", 'wb', closefd=True))
-    print("Weights saved in saved/weights.pkl")
-    pickle.dump(NN.bias, open("saved/bias.pkl", 'wb', closefd=True))
-    print("Bias saved in saved/bias.pkl")
 
 def get_x_y(path, column_range_x, column_y):
     if os.path.isfile(path) == False:
@@ -54,8 +47,12 @@ if __name__ == "__main__":
     single_network_evaluation(NN4, data)
     NN5 = MyNeuralNetwork(name="mini-batch | relu", inputs=data[0], expected=data[1], test_set_x=data[2], test_set_y=data[3], deep_layers=2, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="relu", activation_function_output="softmax", weight_init="he", cost_function="CE", early_stopping=True, validation_hold_outset="Default", feedback=True)
     NN5.fit()
+    NN6 = MyNeuralNetwork(name="one deep layer", inputs=data[0], expected=data[1], test_set_x=data[2], test_set_y=data[3], deep_layers=1, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="relu", activation_function_output="softmax", weight_init="he", cost_function="CE", early_stopping=True, validation_hold_outset="Default", feedback=True)
+    NN6.fit()
+    NN7 = MyNeuralNetwork(name="zero deep layer", inputs=data[0], expected=data[1], test_set_x=data[2], test_set_y=data[3], deep_layers=0, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="relu", activation_function_output="softmax", weight_init="he", cost_function="CE", early_stopping=True, validation_hold_outset="Default", feedback=True)
+    NN7.fit()
     single_network_evaluation(NN5, data)
-    compare_different_neural_networks([NN, NN2, NN3, NN4, NN5])
+    compare_different_neural_networks([NN, NN2, NN3, NN4, NN5, NN6, NN7])
 
 #Best learning rate is smallest default one
 #Less deep layers probably better but not accepted based on what is demanded in pdf

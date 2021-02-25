@@ -1,5 +1,6 @@
 import numpy as np
 from random import randint
+import pickle
 import matplotlib
 matplotlib.use('TkAgg') #Make matplotlib compatible with Big Sur on mac
 import matplotlib.pyplot as mpl
@@ -7,6 +8,16 @@ from .activation_functions import *
 from .init_neural_network import *
 from .cost_functions import *
 from .manipulate_data import *
+
+
+def save_neural_network(NN):
+    neural_net_params = [NN.name, NN.inputs, NN.expected, NN.test_set_x, NN.test_set_y, NN.deep_layers, NN.alpha, NN.n_cycles, NN._gradient_descend, NN.b, NN._activation_function_layers, NN._activation_function_output, NN._weight_init, NN._cost_function, NN.early_stopping, NN.validation_hold_outset, NN.feedback, NN.weights, NN.bias]
+    pickle.dump(neural_net_params, open("saved/neural_network.pkl", 'wb', closefd=True))
+    print("Neural Network saved in saved/neural_network.pkl")
+
+def load_neural_network(path):
+    neural_net_params = pickle.load(open(path, 'rb', closefd=True))
+    return MyNeuralNetwork(neural_net_params[0], neural_net_params[1], neural_net_params[2], neural_net_params[3], neural_net_params[4], neural_net_params[5], neural_net_params[6], neural_net_params[7], neural_net_params[8], neural_net_params[9], neural_net_params[10], neural_net_params[11], neural_net_params[12], neural_net_params[13], neural_net_params[14], neural_net_params[15], neural_net_params[16], neural_net_params[17], neural_net_params[18])
 
 def show_object(name, obj):
     print(name + ":")
@@ -32,8 +43,13 @@ def get_mini_batch(inputs, expected, b):
         last = pos
 
 class MyNeuralNetwork():
-    def __init__(self, name, inputs, expected, test_set_x=None, test_set_y=None, deep_layers=2, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="tanh", activation_function_output="softmax", weight_init="xavier", cost_function="CE", early_stopping=False, validation_hold_outset="Default", feedback=True):
+    def __init__(self, name, inputs, expected, test_set_x=None, test_set_y=None, deep_layers=2, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="tanh", activation_function_output="softmax", weight_init="xavier", cost_function="CE", early_stopping=False, validation_hold_outset="Default", feedback=True, weights=None, bias=None):
         self.name = name
+        self._gradient_descend = gradient_descend
+        self._activation_function_layers = activation_function_layers
+        self._activation_function_output = activation_function_output
+        self._weight_init = weight_init
+        self._cost_function = cost_function
         if gradient_descend == "stochastic":
             self.gradient_descend = self.__stochastic
         elif gradient_descend == "batch":
@@ -90,9 +106,16 @@ class MyNeuralNetwork():
             exit()
         self.inputs = inputs
         self.expected = expected
-        self.layers = init_layers(deep_layers + 1, inputs.shape[1], self.expected.shape[1])
-        self.weights = init_weights(self.layers, inputs.shape[1], self.expected.shape[1], weight_init)
-        self.bias = init_bias(self.weights)
+        self.deep_layers = deep_layers
+        self.layers = init_layers(self.deep_layers + 1, inputs.shape[1], self.expected.shape[1])
+        if weights == None:
+            self.weights = init_weights(self.layers, inputs.shape[1], self.expected.shape[1], weight_init)
+        else:
+            self.weights = weights
+        if bias == None:
+            self.bias = init_bias(self.weights)
+        else:
+            self.bias = bias
         self.__reset_gradients()
         self.alpha = learning_rate
         self.n_cycles = n_cycles
@@ -114,6 +137,7 @@ class MyNeuralNetwork():
             self.best_bias = copy_object_shape(self.bias)
         else:
             self.early_stopping = False
+            self.validation_hold_outset = "Default"
         if self.feedback == True:
             self.show_all()
 
