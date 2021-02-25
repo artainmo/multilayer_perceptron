@@ -190,7 +190,23 @@ Momentum is an optimization method invented for reducing high variance in SGD. I
 
 Too high momentum can lead to the missing of local/global minima (which you do or do not want). If you do not want to miss it nesterov method can be used who will slow down convergence when approaching a local minima.
 
+AdaGrad, ADADELTA, RMSPROP, ADAM, NADAM
+---------------------------------------
+Adapts the learning rate for each parameter. Helps alot when data is sparse and improves SGD robustness. 
+Main benefit is that it eliminates the need to manually tune the learnign rate. 
+Main negative is that it ends up becoming very slow. 
+ADAdelta and RMSprop resolves this problem by limiting the learnign rate smallness.
 
+Adam (adaptive moment estimation) is another method that uses adaptive learrning rates for each parameter.
+Adam is a combination of momentum and ADAdelta.  
+Adam has been shown to work best compared to the other similar optimiztion algorithms.
+Nadam (nesterov adaptive moment estimation) similar to Adam but uses nesterov momentum instead of simple momentum.
+
+Parallelizing SGD
+----------------
+On large datasets SGD can be slow, running it asynchronously (multiple workers/threads) can speed it up.
+Hogwild!, DownpourSGD, delay-tolerant algorithms, elastic averaging SGD are methods used to implement parallelized SGD.
+Tensorflow also contain parallelized SGD.
 
 TERMS MORE EXPLAINED
 --------------------
