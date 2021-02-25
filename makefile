@@ -14,3 +14,10 @@ clean:
 	rm -rf ./documentation/.DS_Store
 	rm -rf ./.DS_Store
 	rm -rf ./datasets/.DS_Store
+
+env:
+	pip3 install numpy
+	pip3 install pandas
+	pip3 install matplotlib
+	pip3 install seaborn
+	#sudo apt-get install python3-tk
