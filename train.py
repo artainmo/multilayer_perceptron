@@ -34,13 +34,15 @@ if __name__ == "__main__":
         path = sys.argv[1]
     if input("Visualize the data?(y/n):") == "y":
         visualize_data(path)
-    x, y = get_x_y(path, list(range(2, 32)), 1)
-    data = get_train_test(x, y)
     while True: #Continue looping until ideal random data split and weight init occured
+        x, y = get_x_y(path, list(range(2, 32)), 1)
+        data = get_train_test(x, y)
         NN = MyNeuralNetwork(name="mini-batch | tanh | xavier | CE", inputs=data[0], expected=data[1], test_set_x=data[2], test_set_y=data[3], deep_layers=2, learning_rate=0.01, n_cycles=1000, gradient_descend="mini-batch", b=32, activation_function_layers="tanh", activation_function_output="softmax", weight_init="xavier", cost_function="CE", early_stopping=True, validation_hold_outset="Default", feedback=True)
         NN.fit()
         if single_network_evaluation(NN, data) == 'y':
             break
+    if input("See other models and bonuses?(y/n):") == "n":
+        exit()
     NN2 = MyNeuralNetwork(name="batch | tanh | xavier | MSE", inputs=data[0], expected=data[1], test_set_x=data[2], test_set_y=data[3], deep_layers=2, learning_rate=0.01, n_cycles=1000, gradient_descend="batch", b=32, activation_function_layers="tanh", activation_function_output="softmax", weight_init="xavier", cost_function="MSE", early_stopping=True, validation_hold_outset="Default", feedback=True)
     NN2.fit()
     single_network_evaluation(NN2, data)

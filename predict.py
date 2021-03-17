@@ -10,6 +10,8 @@ if __name__ == "__main__":
     NN = load_neural_network("saved/neural_network.pkl")
     predictions = NN.predict(x)
     if input("Evaluate predictions?(y/n):") == "y":
+        print("Cross entropy", end=" ")
+        print(NN.cost()) #demanded for correction
         evaluate(predictions, y)
     if input("Save predictions?(y/n):") == "y":
         try:

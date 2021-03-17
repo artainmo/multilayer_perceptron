@@ -7,6 +7,8 @@ predict:
 	@python3 predict.py
 
 clean:
+	rm correction/data_test.csv
+	rm correction/data_training.csv
 	rm -rf ./__pycache__
 	rm -rf ./lib/MyNeuralNetwork/MyStats/__pycache__
 	rm -rf ./lib/MyNeuralNetwork/MyStats/stats/__pycache__

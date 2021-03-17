@@ -55,7 +55,6 @@ def confusion_matrix(expected_values, predicted_values, class_):
     confusion_matrix.at["negative class", "negative prediction"] = data["true_negative"]
     return confusion_matrix
 
-
 def evaluate(expected_values, predicted_values, class_=1):
     print("=============================================FEEDBACK EVALUATION===============================================")
     print("accuracy score: " + str(accuracy_score(expected_values, predicted_values)))
