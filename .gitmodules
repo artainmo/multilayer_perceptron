@@ -1,0 +1,3 @@
+[submodule "NeuralNetworkLib"]
+	path = NeuralNetworkLib
+	url = https://github.com/artainmo/NeuralNetworkLib.git
